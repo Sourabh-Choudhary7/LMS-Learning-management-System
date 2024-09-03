@@ -1,9 +1,8 @@
-import Home from "./pages/Home"
 function App() {
 
   return (
     <>
-      <Home/>
+      <h1 className="text-3xl font-bold underline">Start with Frontend...</h1>
     </>
   )
 }
