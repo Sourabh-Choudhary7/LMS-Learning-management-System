@@ -1,12 +1,11 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { GiHamburgerMenu } from "react-icons/gi";
-import { FaLongArrowAltLeft } from "react-icons/fa";
 
 const Navbar = ({ isLoggedIn }) => {
 
 
     return (
-        <div className="navbar bg-base-100 h-[10vh]">
+        <div className="navbar bg-base-100 h-[10vh] w-full">
             <div className="flex-none pl-2">
                 <label htmlFor="my-drawer" className="cursor-pointer">
                     <GiHamburgerMenu className="cursor-pointer text-2xl" />

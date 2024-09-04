@@ -1,23 +1,40 @@
 import React, { useState } from 'react'
 import Navbar from '../components/Navbar'
 import Footer from '../components/footer'
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { FaLongArrowAltLeft, FaHome, FaBook } from "react-icons/fa";
 import { RiAdminFill } from "react-icons/ri";
 import { MdContactPhone } from "react-icons/md";
 import { IoIosInformationCircle } from "react-icons/io";
+import { useDispatch, useSelector } from 'react-redux';
 
 const Layout = ({ children }) => {
-    const isLoggedIn = false; // just try to implement without state management leter we will implement all this using redux toolkit...
+
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
+
+    // checking user if user is logged in
+    const isLoggedIn = useSelector((state) => state?.auth?.isLoggedIn)
+
+    // for displaying the options accourding to the role
+
+    const role = useSelector((state) => state?.auth?.role);
+
+    const handleLogout = (e) => {
+        e.preventDefault();
+        // dispatch(logout());
+        // if(res?.payload ?.success) 
+        navigate('/');
+    }
     return (
-        <div className='min-h-100'>
+        <div className=''>
 
             <div className="drawer z-10 ">
                 <input id="my-drawer" type="checkbox" className="drawer-toggle" />
                 <div className="drawer-content">
                     <Navbar isLoggedIn={isLoggedIn} />
                     {/* Page content here */}
-                    <div className="p-4 h-[80vh]">
+                    <div className="p-4 w-full">
                         {children}
                     </div>
                 </div>
@@ -39,9 +56,9 @@ const Layout = ({ children }) => {
                                 <Link to={"/"}><FaHome />Home</Link>
                             </li>
                             {
-                                isLoggedIn && (
+                                isLoggedIn && role === 'ADMIN' && (
                                     <li>
-                                        <Link to={"/admin"}><RiAdminFill />Admin Dashboard</Link>
+                                        <Link to={"/admin/dashboard"}><RiAdminFill />Admin Dashboard</Link>
                                     </li>
                                 )
                             }
@@ -56,12 +73,16 @@ const Layout = ({ children }) => {
                             </li>
                             {
                                 !isLoggedIn && (
-                                    <div className='flex justify-between items-center gap-4 absolute bottom-0'>
+                                    <div className='flex justify-between items-center absolute bottom-0'>
                                         <li>
-                                            <button className='btn btn-sm btn-outline btn-primary px-10'>Login</button>
+                                            <Link to={"/login"}>
+                                                <button className='btn btn-sm btn-outline btn-primary px-8'>Login</button>
+                                            </Link>
                                         </li>
                                         <li>
-                                            <button className='btn btn-sm btn-outline btn-secondary px-10'>Signup</button>
+                                        <Link to={"/signup"}>
+                                            <button className='btn btn-sm btn-outline btn-secondary px-8'>Signup</button>
+                                        </Link>
                                         </li>
                                     </div>
                                 )
@@ -70,7 +91,9 @@ const Layout = ({ children }) => {
                                 isLoggedIn && (
                                     <div className='flex justify-center items-center absolute bottom-0'>
                                         <li>
-                                            <button className='btn btn-sm btn-outline btn-secondary px-24'>Logout</button>
+                                            <button
+                                                onClick={handleLogout}
+                                                className='btn btn-sm btn-outline btn-secondary px-24'>Logout</button>
                                         </li>
                                     </div>
                                 )
