@@ -1,8 +1,10 @@
 import React, { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { FaEyeSlash, FaEye, FaKey } from "react-icons/fa";
 import { MdOutlineMailOutline } from "react-icons/md";
 import Layout from '../layout/Layout';
+import { useDispatch } from 'react-redux';
+import { login } from '../redux/Slices/AuthSlice';
 
 const Login = () => {
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
@@ -10,6 +12,7 @@ const Login = () => {
         setIsPasswordVisible(!isPasswordVisible);
 
     }
+
 
     const [loginData, setLoginData] = useState({
         email: "",
@@ -22,7 +25,31 @@ const Login = () => {
             [name]: value,
         });
     };
+
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
+
     // function to login
+    const handleLogin = async (event) => {
+        event.preventDefault();
+
+        if (!loginData.email || !loginData.password) {
+            toast.error("Please fill all the fields")
+            return;
+        }
+
+        const response = await dispatch(login(loginData))
+        console.log(response);
+
+        if (response?.payload?.success)
+            navigate('/');
+
+        setLoginData({
+            email: "",
+            password: "",
+        })
+
+    };
 
     return (
         <Layout >
@@ -31,13 +58,13 @@ const Login = () => {
                     <div className="card card-side bg-base-100 shadow-xl w-[50vw] mt-20 max-sm:w-full">
                         <figure >
                             <img style={{ height: '100%', width: '300px' }}
-                            className='block max-sm:hidden'
+                                className='block max-sm:hidden'
                                 src="https://www.hostinger.com/tutorials/wp-content/uploads/sites/2/2023/02/how-to-create-online-course.webp"
                                 alt="image" />
                         </figure>
                         <div className="card-body">
                             <h2 className="card-title">Login</h2>
-                            <form action="" className='mt-4'>
+                            <form action="" onSubmit={handleLogin} className='mt-4'>
                                 <label className="input input-bordered flex items-center gap-2 mb-4">
                                     <MdOutlineMailOutline />
                                     <input

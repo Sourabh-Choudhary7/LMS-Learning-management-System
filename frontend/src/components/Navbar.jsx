@@ -3,7 +3,7 @@ import { GiHamburgerMenu } from "react-icons/gi";
 
 const Navbar = ({ isLoggedIn }) => {
 
-
+// console.log(userData)
     return (
         <div className="navbar bg-base-100 h-[10vh] w-full">
             <div className="flex-none pl-2">

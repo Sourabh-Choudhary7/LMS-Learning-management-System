@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import Navbar from '../components/Navbar'
 import Footer from '../components/footer'
 import { Link, useNavigate } from "react-router-dom";
@@ -7,32 +7,46 @@ import { RiAdminFill } from "react-icons/ri";
 import { MdContactPhone } from "react-icons/md";
 import { IoIosInformationCircle } from "react-icons/io";
 import { useDispatch, useSelector } from 'react-redux';
+import { logout } from '../redux/Slices/AuthSlice';
 
 const Layout = ({ children }) => {
 
     const dispatch = useDispatch();
     const navigate = useNavigate();
+    // const [userData, setUserData] = useState(null);
 
     // checking user if user is logged in
     const isLoggedIn = useSelector((state) => state?.auth?.isLoggedIn)
+    // const userData = useSelector((state) => state?.auth?.data);
 
     // for displaying the options accourding to the role
 
     const role = useSelector((state) => state?.auth?.role);
 
-    const handleLogout = (e) => {
+    async function handleLogout(e) {
         e.preventDefault();
-        // dispatch(logout());
-        // if(res?.payload ?.success) 
-        navigate('/');
+        const res = await dispatch(logout());
+        if (res?.payload?.success)
+            navigate("/");
     }
+    // const fetchUserData = async () => {
+    //     const res = await dispatch(getUserData());
+    //     // setUserData(res?.payload?.data);
+    //     return res
+    // };
+    // useEffect(() => {
+    //     fetchUserData();
+    // }, []);
+
+
     return (
         <div className=''>
 
             <div className="drawer z-10 ">
                 <input id="my-drawer" type="checkbox" className="drawer-toggle" />
                 <div className="drawer-content">
-                    <Navbar isLoggedIn={isLoggedIn} />
+                    <Navbar isLoggedIn={isLoggedIn}/>
+                    {/* <Navbar isLoggedIn={isLoggedIn} userData={userData} /> */}
                     {/* Page content here */}
                     <div className="p-4 w-full">
                         {children}
@@ -52,6 +66,11 @@ const Layout = ({ children }) => {
                                 </label>
 
                             </li>
+                            {isLoggedIn &&
+                                <li>
+                                    <h3>UserName</h3>
+                                    {/* <h3>{`${userData?.fullName?.toUpperCase()} (${userData?.role})`}</h3> */}
+                                </li>}
                             <li>
                                 <Link to={"/"}><FaHome />Home</Link>
                             </li>
@@ -80,9 +99,9 @@ const Layout = ({ children }) => {
                                             </Link>
                                         </li>
                                         <li>
-                                        <Link to={"/signup"}>
-                                            <button className='btn btn-sm btn-outline btn-secondary px-8'>Signup</button>
-                                        </Link>
+                                            <Link to={"/signup"}>
+                                                <button className='btn btn-sm btn-outline btn-secondary px-8'>Signup</button>
+                                            </Link>
                                         </li>
                                     </div>
                                 )
