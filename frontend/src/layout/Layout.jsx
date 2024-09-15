@@ -17,7 +17,8 @@ const Layout = ({ children }) => {
 
     // checking user if user is logged in
     const isLoggedIn = useSelector((state) => state?.auth?.isLoggedIn)
-    // const userData = useSelector((state) => state?.auth?.data);
+    const userData = useSelector((state) => state?.auth?.data);
+    console.log(userData?.fullName);
 
     // for displaying the options accourding to the role
 
@@ -45,8 +46,7 @@ const Layout = ({ children }) => {
             <div className="drawer z-10 ">
                 <input id="my-drawer" type="checkbox" className="drawer-toggle" />
                 <div className="drawer-content">
-                    <Navbar isLoggedIn={isLoggedIn}/>
-                    {/* <Navbar isLoggedIn={isLoggedIn} userData={userData} /> */}
+                    <Navbar isLoggedIn={isLoggedIn} userData={userData} handleLogout={handleLogout} />
                     {/* Page content here */}
                     <div className="p-4 w-full">
                         {children}
@@ -68,8 +68,7 @@ const Layout = ({ children }) => {
                             </li>
                             {isLoggedIn &&
                                 <li>
-                                    <h3>UserName</h3>
-                                    {/* <h3>{`${userData?.fullName?.toUpperCase()} (${userData?.role})`}</h3> */}
+                                    <h3>{`Welcome! ${userData?.fullName?.toUpperCase()} (${userData?.role})`}</h3>
                                 </li>}
                             <li>
                                 <Link to={"/"}><FaHome />Home</Link>

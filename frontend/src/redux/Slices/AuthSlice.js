@@ -5,7 +5,8 @@ import toast from 'react-hot-toast';
 const initialState = {
     isLoggedIn: localStorage.getItem('isLoggedIn') || false,
     role: localStorage.getItem('role') || "",
-    data: localStorage.getItem('data') || {}
+    // data: localStorage.getItem('data') || {}
+    data: localStorage.getItem('data') ? JSON.parse(localStorage.getItem('data')) : null
 }
 // function to handle signup
 export const createAccount = createAsyncThunk("/auth/signup", async (data) => {
@@ -45,6 +46,7 @@ export const login = createAsyncThunk("/auth/login", async (data) => {
         return res.data;
     } catch (error) {
         toast.error(error?.response?.data?.message);
+        return rejectWithValue(error?.response?.data);
     }
 });
 

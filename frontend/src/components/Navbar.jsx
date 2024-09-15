@@ -1,7 +1,7 @@
 import React from 'react'
 import { GiHamburgerMenu } from "react-icons/gi";
 
-const Navbar = ({ isLoggedIn }) => {
+const Navbar = ({ isLoggedIn, userData, handleLogout }) => {
 
 // console.log(userData)
     return (
@@ -25,7 +25,7 @@ const Navbar = ({ isLoggedIn }) => {
                                 <div className="w-10 rounded-full">
                                     <img
                                         alt="User avatar"
-                                        src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp" />
+                                        src={userData?.avatar?.secure_url} />
                                 </div>
                             </div>
                             <ul
@@ -38,7 +38,7 @@ const Navbar = ({ isLoggedIn }) => {
                                     </a>
                                 </li>
                                 <li><a>Settings</a></li>
-                                <li><a>Logout</a></li>
+                                <li><a onClick={handleLogout}>Logout</a></li>
                             </ul>
                         </div>
                     </div>
