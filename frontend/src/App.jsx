@@ -1,4 +1,4 @@
-import { Routes, Route, useNavigate } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import { useSelector } from 'react-redux';
 import Home from "./pages/Home";
 import About from "./pages/About";
@@ -8,6 +8,10 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import CourseList from "./pages/Course/CourseList";
 import CourseInfo from "./pages/Course/CourseInfo";
+import CreateCourse from "./pages/Course/CreateCourse";
+import Denied from "./pages/Denied";
+import RequireAuth from "./components/Auth/RequireAuth"
+
 
 function App() {
   const isLoggedIn = useSelector((state) => state?.auth?.isLoggedIn);
@@ -15,20 +19,23 @@ function App() {
   return (
     <>
       <Routes>
+        <Route path="/signup" element={!isLoggedIn ? <Signup /> : <Navigate to="/" />} />
+        <Route path="/login" element={!isLoggedIn ? <Login /> : <Navigate to="/" />} />
+
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/courses" element={<CourseList />} />
         <Route path="/course/description" element={<CourseInfo />} />
-        <Route path="*" element={<ErrorNotFound />} />
 
-        {
-          !isLoggedIn &&
-          <>
-            <Route path="/signup" element={<Signup />} />
-            <Route path="/login" element={<Login />} />
-          </>
-        }
+        <Route element={<RequireAuth allowedRoles={["ADMIN"]} />}>
+          <Route path="/course/create" element={<CreateCourse />} />
+
+        </Route>
+
+        <Route path="*" element={<ErrorNotFound />} />
+        <Route path="/denied" element={<Denied />} />
+
       </Routes>
     </>
   );
