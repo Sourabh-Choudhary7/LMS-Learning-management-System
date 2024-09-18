@@ -7,6 +7,7 @@ import ErrorNotFound from "./pages/ErrorNotFound";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import CourseList from "./pages/Course/CourseList";
+import CourseInfo from "./pages/Course/CourseInfo";
 
 function App() {
   const isLoggedIn = useSelector((state) => state?.auth?.isLoggedIn);
@@ -18,6 +19,7 @@ function App() {
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/courses" element={<CourseList />} />
+        <Route path="/course/description" element={<CourseInfo />} />
         <Route path="*" element={<ErrorNotFound />} />
 
         {
