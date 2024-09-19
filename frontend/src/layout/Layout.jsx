@@ -4,7 +4,7 @@ import Footer from '../components/footer'
 import { Link, useNavigate } from "react-router-dom";
 import { FaLongArrowAltLeft, FaHome, FaBook } from "react-icons/fa";
 import { RiAdminFill } from "react-icons/ri";
-import { MdContactPhone } from "react-icons/md";
+import { MdAddCircle, MdContactPhone } from "react-icons/md";
 import { IoIosInformationCircle } from "react-icons/io";
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../redux/Slices/AuthSlice';
@@ -75,9 +75,14 @@ const Layout = ({ children }) => {
                             </li>
                             {
                                 isLoggedIn && role === 'ADMIN' && (
-                                    <li>
-                                        <Link to={"/admin/dashboard"}><RiAdminFill />Admin Dashboard</Link>
-                                    </li>
+                                    <>
+                                        <li>
+                                            <Link to={"/admin/dashboard"}><RiAdminFill />Admin Dashboard</Link>
+                                        </li>
+                                        <li>
+                                            <Link to={"/course/create"}><MdAddCircle />Create New Course</Link>
+                                        </li>
+                                    </>
                                 )
                             }
                             <li>
