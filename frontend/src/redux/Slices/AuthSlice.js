@@ -124,6 +124,49 @@ export const changePassword = createAsyncThunk("/auth/update/password", async (d
     }
 });
 
+// function to handle forgot password
+export const forgotPassword = createAsyncThunk("/auth/reset/password", async (data) => {
+    try {
+        let res = axiosInstance.post("users/reset", data);
+
+        toast.promise(res, {
+            loading: "Wait! reset password link is sending to your email...",
+            success: (data) => {
+                return data?.data?.message;
+            },
+            error: "Failed to update password",
+        });
+
+        // getting response resolved here
+        res = await res;
+        return res.data;
+    } catch (error) {
+        toast.error(error?.response?.data?.message);
+    }
+});
+
+// function to handle forgot password
+export const resetPassword = createAsyncThunk("/auth/change/password", async ({ resetToken, data }, thunkAPI) => {
+    try {
+        let res = axiosInstance.post(`users/reset/${resetToken}`, data);
+
+        toast.promise(res, {
+            loading: "Wait! updating password...",
+            success: (data) => {
+                return data?.data?.message;
+            },
+            error: "Failed to update password",
+        });
+
+        // getting response resolved here
+        res = await res;
+        return res.data;
+    } catch (error) {
+        toast.error(error?.response?.data?.message);
+        return thunkAPI.rejectWithValue(error?.response?.data?.message);
+    }
+});
+
 const authSlice = createSlice({
     name: 'auth',
     initialState,

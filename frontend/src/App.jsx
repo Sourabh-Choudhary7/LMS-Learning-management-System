@@ -1,3 +1,4 @@
+// App.js
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useSelector } from 'react-redux';
 import Home from "./pages/Home";
@@ -10,11 +11,12 @@ import CourseList from "./pages/Course/CourseList";
 import CourseInfo from "./pages/Course/CourseInfo";
 import CreateCourse from "./pages/Course/CreateCourse";
 import Denied from "./pages/Denied";
-import RequireAuth from "./components/Auth/RequireAuth"
+import RequireAuth from "./components/Auth/RequireAuth";
 import Profile from "./pages/User/Profile";
 import EditProfile from "./pages/User/EditProfile";
 import ChangePassword from "./pages/User/ChangePassword";
-
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 
 function App() {
   const isLoggedIn = useSelector((state) => state?.auth?.isLoggedIn);
@@ -22,28 +24,34 @@ function App() {
   return (
     <>
       <Routes>
+        {/* Public Routes */}
         <Route path="/signup" element={!isLoggedIn ? <Signup /> : <Navigate to="/" />} />
         <Route path="/login" element={!isLoggedIn ? <Login /> : <Navigate to="/" />} />
+        <Route path="/forgetpassword" element={<ForgotPassword />} />
+        <Route path="/reset-password/:resetToken" element={<ResetPassword />} />
 
-        <Route path="/" element={<Home />} />
-        <Route path="/about" element={<About />} />
-        <Route path="/contact" element={<Contact />} />
-        <Route path="/courses" element={<CourseList />} />
-        <Route path="/course/description" element={<CourseInfo />} />
-
+        {/* Protected Routes for ADMIN */}
         <Route element={<RequireAuth allowedRoles={["ADMIN"]} />}>
           <Route path="/course/create" element={<CreateCourse />} />
         </Route>
 
+        {/* Protected Routes for ADMIN and USER */}
         <Route element={<RequireAuth allowedRoles={["ADMIN", "USER"]} />}>
           <Route path="/user/profile" element={<Profile />} />
           <Route path="/user/editprofile" element={<EditProfile />} />
           <Route path="/changepassword" element={<ChangePassword />} />
         </Route>
 
-        <Route path="*" element={<ErrorNotFound />} />
+        {/* General Routes */}
+        <Route path="/" element={<Home />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/contact" element={<Contact />} />
+        <Route path="/courses" element={<CourseList />} />
+        <Route path="/course/description" element={<CourseInfo />} />
         <Route path="/denied" element={<Denied />} />
 
+        {/* Fallback Route */}
+        <Route path="*" element={<ErrorNotFound />} />
       </Routes>
     </>
   );
