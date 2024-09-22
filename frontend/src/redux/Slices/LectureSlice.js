@@ -3,7 +3,7 @@ import axiosInstance from '../../helpers/axiosInstance';
 import toast from 'react-hot-toast';
 
 const initialState = {
-    lectureData: [],
+    lectures: []
 }
 
 export const getAllLectures = createAsyncThunk("/course/lecture/get", async (c_id) => {
@@ -55,20 +55,17 @@ export const removeCourseLecture = createAsyncThunk("/course/lectures/remove", a
 const lectureSlice = createSlice({
     name: "lecture",
     initialState,
-    reducers: {
-
-    },
+    reducers: {},
     extraReducers: (builder) => {
-        builder
-            .addCase(getAllLectures.fulfilled, (state, action) => {
-                console.log(action)
-                state.lectureData = action?.payload?.lectures
-            })
-            .addCase(addCourseLecture.fulfilled, (state, action) => {
-                console.log(action)
-                state.lectureData = action?.payload?.course?.lectures
-            })
+        builder.addCase(getAllLectures.fulfilled, (state, action) => {
+            console.log(action);
+            state.lectures = action?.payload?.lectures;
+        })
+        .addCase(addCourseLecture.fulfilled, (state, action) => {
+            console.log(action);
+            state.lectures = action?.payload?.course?.lectures;
+        })
     }
-})
+});
 
 export default lectureSlice.reducer;
