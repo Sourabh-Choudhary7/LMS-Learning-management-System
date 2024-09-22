@@ -1,10 +1,36 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { GiHamburgerMenu } from "react-icons/gi";
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
+import { clearSearchQuery, setSearchQuery } from '../redux/Slices/CourseSlice';
+import { useDispatch } from 'react-redux';
 
 const Navbar = ({ isLoggedIn, userData, handleLogout }) => {
 
-// console.log(userData)
+    const location = useLocation();
+
+    const dispatch = useDispatch();
+    const [localSearch, setLocalSearch] = useState('');
+
+    // we can also handle this from debouncing methods. Here, current implementation using setTimeout within useEffect
+    useEffect(() => {
+        const handler = setTimeout(() => {
+            dispatch(setSearchQuery(localSearch));
+        }, 300); // Debounce delay of 300ms
+
+        return () => {
+            clearTimeout(handler);
+        };
+    }, [localSearch, dispatch]);
+
+    const handleInputChange = (e) => {
+        setLocalSearch(e.target.value);
+    };
+
+    // const handleSearchClear = () => {
+    //     setLocalSearch('');
+    //     dispatch(clearSearchQuery());
+    // };
+
     return (
         <div className="navbar bg-base-100 h-[10vh] w-full">
             <div className="flex-none pl-2">
@@ -15,12 +41,23 @@ const Navbar = ({ isLoggedIn, userData, handleLogout }) => {
             <div className="flex-1 pl-2">
                 <a className="btn btn-ghost text-xl">LMS</a>
             </div>
-            {
-                isLoggedIn && (
-                    <div className="flex-none gap-2">
-                        <div className="form-control">
-                            <input type="text" placeholder="Search" className="input input-bordered w-24 md:w-auto" />
-                        </div>
+
+            <div className="flex-none gap-2">
+                {location.pathname === '/courses' && (
+                    <div className="form-control flex items-center">
+                    <input
+                        type="text"
+                        placeholder="Search a Course..."
+                        className="input input-bordered w-24 md:w-auto"
+                        value={localSearch}
+                        onChange={handleInputChange}
+                        aria-label="Search Courses"
+                    />
+                </div>
+
+                )}
+                {
+                    isLoggedIn && (
                         <div className="dropdown dropdown-end">
                             <div tabIndex={0} role="button" className="btn btn-ghost btn-circle avatar">
                                 <div className="w-10 rounded-full">
@@ -42,10 +79,11 @@ const Navbar = ({ isLoggedIn, userData, handleLogout }) => {
                                 <li><a onClick={handleLogout}>Logout</a></li>
                             </ul>
                         </div>
-                    </div>
+                    )
+                }
+            </div>
 
-                )
-            }
+
         </div>
     )
 }

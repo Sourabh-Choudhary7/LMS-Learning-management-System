@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useMemo } from 'react'
 import CourseCard from '../../components/CourseCard'
 import { useDispatch, useSelector } from 'react-redux';
 import { getAllCourses } from '../../redux/Slices/CourseSlice';
@@ -7,7 +7,7 @@ import Layout from '../../layout/Layout';
 const CourseList = () => {
     const dispatch = useDispatch();
 
-    const { courseData } = useSelector((state) => state.course);
+    const { courseData, searchQuery } = useSelector((state) => state.course);
     console.log("courseData:", courseData)
 
     async function loadCourses() {
@@ -17,6 +17,14 @@ const CourseList = () => {
     useEffect(() => {
         loadCourses();
     }, []);
+
+    const filteredCourses = useMemo(() => {
+        if (!searchQuery) return courseData;
+        return courseData.filter(course =>
+            course.title.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+    }, [courseData, searchQuery]);
+    
     return (
         <Layout>
             <div className="min-h-[90vh] pt-12 pl-20 flex flex-col gap-10 text-white">
@@ -28,9 +36,13 @@ const CourseList = () => {
                     </span>
                 </h1>
                 <div className="mb-10 flex flex-wrap gap-14">
-                    {courseData?.map((element) => {
-                        return <CourseCard key={element._id} data={element} />
-                    })}
+                    {filteredCourses.length > 0 ? (
+                        filteredCourses.map((element) => (
+                            <CourseCard key={element._id} data={element} />
+                        ))
+                    ) : (
+                        <p>No courses found matching your search.</p>
+                    )}
                 </div>
 
 

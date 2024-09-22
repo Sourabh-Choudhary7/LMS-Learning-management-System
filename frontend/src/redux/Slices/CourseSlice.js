@@ -3,7 +3,8 @@ import axiosInstance from "../../helpers/axiosInstance";
 import toast from 'react-hot-toast';
 
 const initialState = {
-    courseData: []
+    courseData: [],
+    searchQuery:''
 }
 
 export const getAllCourses = createAsyncThunk("/course/get", async () => {
@@ -38,12 +39,17 @@ export const createCourse = createAsyncThunk("/course/create", async (data) => {
     }
 });
 
-
-
 const courseSlice = createSlice({
     name: "courses",
     initialState,
-    reducers: {},
+    reducers: {
+        setSearchQuery: (state, action) => {
+            state.searchQuery = action.payload;
+        },
+        clearSearchQuery: (state) => {
+            state.searchQuery = "";
+        }
+    },
     extraReducers: (builder) => {
         builder.addCase(getAllCourses.fulfilled, (state, action) => {
             if (action.payload) {
@@ -54,5 +60,6 @@ const courseSlice = createSlice({
     }
 });
 
+export const { setSearchQuery, clearSearchQuery } = courseSlice.actions;
 
 export default courseSlice.reducer;
