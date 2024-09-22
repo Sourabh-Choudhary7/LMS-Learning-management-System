@@ -12,12 +12,13 @@ router.route('/')
         authorizeRoles('ADMIN'),
         upload.single('thumbnail'), createCourse
     )
-    .delete(isLoggedIn, authorizeRoles('ADMIN'), removeLectureFromCourse);
+    .delete(isLoggedIn, authorizeRoles('ADMIN'), removeLectureFromCourse); 
 
 router.route('/:id')
     .get(
         isLoggedIn,
-        authorizeRoles('ADMIN'),getLecturesByCourseId
+        // authorizeRoles('ADMIN'),getLecturesByCourseId // //prefer this one but I am using below one for both admin and user role because I didn't implemented checkout payment in frontend
+        authorizeRoles('ADMIN', 'USER'),getLecturesByCourseId 
     )
     .post(
         isLoggedIn,
