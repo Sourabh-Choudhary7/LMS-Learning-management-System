@@ -102,7 +102,7 @@ const DisplayLecture = () => {
                         :
                         (
                         role === "USER" && (
-                            <p>Coming soon..</p>
+                            <p>Lecture Coming soon..</p>
                         )
                         )
                     )}
