@@ -8,8 +8,8 @@ const initialState = {
 
 export const getAllLectures = createAsyncThunk("/course/lecture/get", async (c_id) => {
     try {
-        let res = await axiosInstance.get(`/courses/${c_id}`);
-        toast.promise(response, {
+        let res = axiosInstance.get(`/courses/${c_id}`);
+        toast.promise(res, {
             loading: "Fetching course lectures",
             success: "Lectures fetched successfully",
             error: "Failed to load the lectures"
@@ -24,8 +24,8 @@ export const getAllLectures = createAsyncThunk("/course/lecture/get", async (c_i
 
 export const addCourseLecture = createAsyncThunk("/course/lectures/add", async (data) => {
     try {
-        let res = await axiosInstance.post(`/courses/${data.id}`, data);
-        toast.promise(response, {
+        let res = axiosInstance.post(`/courses/${data.id}`, data);
+        toast.promise(res, {
             loading: "Adding new lecture",
             success: "Lecture added successfully",
             error: "Failed to add the lecture"
@@ -39,8 +39,8 @@ export const addCourseLecture = createAsyncThunk("/course/lectures/add", async (
 
 export const removeCourseLecture = createAsyncThunk("/course/lectures/remove", async (data) => {
     try {
-        let res = await axiosInstance.delete(`/courses?courseId=${data.courseId}&lectureId=${data.lectureId}`);
-        toast.promise(response, {
+        let res = axiosInstance.delete(`/courses?courseId=${data.courseId}&lectureId=${data.lectureId}`);
+        toast.promise(res, {
             loading: "Removing lecture",
             success: "Lecture removed successfully",
             error: "Failed to remove the lecture"

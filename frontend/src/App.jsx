@@ -17,6 +17,7 @@ import EditProfile from "./pages/User/EditProfile";
 import ChangePassword from "./pages/User/ChangePassword";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
+import DisplayLecture from "./pages/Dashboard/DisplayLecture";
 
 function App() {
   const isLoggedIn = useSelector((state) => state?.auth?.isLoggedIn);
@@ -40,6 +41,7 @@ function App() {
           <Route path="/user/profile" element={<Profile />} />
           <Route path="/user/editprofile" element={<EditProfile />} />
           <Route path="/changepassword" element={<ChangePassword />} />
+          <Route path="/course/displaylectures" element={<DisplayLecture />} />
         </Route>
 
         {/* General Routes */}

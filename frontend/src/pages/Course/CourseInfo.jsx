@@ -36,7 +36,7 @@ const CourseInfo = () => {
                                 </button>
                             </div>
                             <div className='w-1/3'>
-                                {role === "ADMIN" || data?.subscription?.status === "active" ? (
+                                {/* {role === "ADMIN" || data?.subscription?.status === "active" ? (
                                     <button onClick={() => navigate("/course/displaylectures", { state: { ...state } })} className="bg-yellow-600 text-xl rounded-md font-bold px-5 py-3 w-full hover:bg-yellow-500 transition-all ease-in-out duration-300">
                                         Watch lectures
                                     </button>
@@ -45,7 +45,10 @@ const CourseInfo = () => {
                                         Subscribe
                                     </button>
                                 )
-                                }
+                                } */}
+                                <button onClick={() => navigate("/course/displaylectures", { state: { ...state } })} className="bg-yellow-600 text-xl rounded-md font-bold px-5 py-3 w-full hover:bg-yellow-500 transition-all ease-in-out duration-300">
+                                    Watch lectures
+                                </button>
                             </div>
                         </div>
                     </div>
