@@ -11,6 +11,9 @@ const CreateCourse = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
+  // loading
+  const [isLoading, setIsLoading] = useState(false);
+
   const [courseData, setCourseData] = useState({
     title: "",
     description: "",
@@ -63,8 +66,11 @@ const CreateCourse = () => {
     formData.append("category", courseData.category);
     formData.append("thumbnail", courseData.thumbnail);
 
+    setIsLoading(true);
+
     const res = await dispatch(createCourse(formData));
     if (res?.payload?.success)
+      setIsLoading(false);
       navigate("/courses");
 
     setCourseData({
@@ -183,8 +189,12 @@ const CreateCourse = () => {
             </div>
           </main>
 
-          <button type="submit" className="w-full py-2 rounded-sm font-semibold text-lg cursor-pointer bg-yellow-600 hover:bg-yellow-500 transition-all ease-in-out duration-300">
-            Create Course
+          <button
+            type="submit"
+            className={`w-full py-2 rounded-sm font-semibold text-lg cursor-pointer ${isLoading ? 'bg-gray-600 hover:none cursor-wait' : 'bg-yellow-600 hover:bg-yellow-500'}  transition-all ease-in-out duration-300`}
+            disabled={isLoading}
+          >
+            {isLoading ? "Creating Course..." : "Create Course"}
           </button>
 
 

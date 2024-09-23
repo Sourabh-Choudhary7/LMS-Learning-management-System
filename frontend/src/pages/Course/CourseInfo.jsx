@@ -1,14 +1,24 @@
 import React, { useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import Layout from '../../layout/Layout';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import { getAllCourses, removeCourse } from '../../redux/Slices/CourseSlice';
 
 const CourseInfo = () => {
 
-    const { state } = useLocation();
+    const dispatch = useDispatch();
     const navigate = useNavigate();
+
+    const { state } = useLocation();
     const { role, data } = useSelector((state) => state.auth);
     console.log(state);
+
+    const onCourseDataDelete = async () => {
+
+        await dispatch(removeCourse(state?._id));
+        navigate("/courses");
+        await dispatch(getAllCourses());
+    }
 
     return (
         <Layout>
@@ -49,7 +59,25 @@ const CourseInfo = () => {
                                 <button onClick={() => navigate("/course/displaylectures", { state: { ...state } })} className="bg-yellow-600 text-xl rounded-md font-bold px-5 py-3 w-full hover:bg-yellow-500 transition-all ease-in-out duration-300">
                                     Watch lectures
                                 </button>
+
                             </div>
+                            {
+                                role === "ADMIN" && (
+                                    <>
+                                        <div className='w-1/3'>
+                                            <button onClick={() => navigate("/course/editcourse", { state: { ...state } })} className="bg-green-600 text-xl rounded-md font-bold px-5 py-3 w-full hover:bg-green-500 transition-all ease-in-out duration-300">
+                                                Edit Course
+                                            </button>
+                                        </div>
+                                        <div className='w-1/3'>
+                                            <button onClick={() => onCourseDataDelete()} className="bg-red-600 text-xl rounded-md font-bold px-5 py-3 w-full hover:bg-red-500 transition-all ease-in-out duration-300">
+                                                Delete Course
+                                            </button>
+                                        </div>
+                                    </>
+                                )
+                            }
+
                         </div>
                     </div>
                 </div>
