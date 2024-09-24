@@ -113,9 +113,6 @@ const EditCourse = () => {
                     onSubmit={handleOnEditCourse}
                     className="flex flex-col justify-center gap-5 rounded-lg p-6 text-white w-[700px] my-10 shadow-lg relative bg-gray-800"
                 >
-                    <Link to={()=> { "/course/description", { state: { ...state } }}} className="absolute top-4 left-4 text-2xl text-accent hover:text-accent-hover cursor-pointer">
-                        <AiOutlineArrowLeft />
-                    </Link>
 
                     <h1 className="text-center text-3xl font-bold mb-4">
                         Edit Course
