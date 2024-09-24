@@ -4,7 +4,7 @@ import toast from 'react-hot-toast';
 
 const initialState = {
     courseData: [],
-    searchQuery:''
+    searchQuery: ''
 }
 
 export const getAllCourses = createAsyncThunk("/course/get", async () => {
@@ -54,6 +54,30 @@ export const removeCourse = createAsyncThunk("/course/delete", async (id) => {
         throw error;
     }
 });
+
+export const updateCourse = createAsyncThunk("/course/update", async (data) => {
+    console.log("from update course slice: ", data)
+    const formData = new FormData();
+    formData.append("title", data.title);
+    formData.append("description", data.description);
+    formData.append("createdBy", data.createdBy);
+    formData.append("category", data.category);
+    if (data.thumbnail) {
+        formData.append("thumbnail", data.thumbnail);
+    }
+    try {
+        let res = axiosInstance.put(`/courses/${data[0]}`, formData);
+        toast.promise(res, {
+            loading: "Updating course data...",
+            success: "Course updated successfully",
+            error: "Failed to update the course",
+        });
+        return (await res).data
+    } catch (error) {
+        toast.error(error?.response?.data?.message);
+        throw error;
+    }
+})
 
 
 const courseSlice = createSlice({
