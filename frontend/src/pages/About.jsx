@@ -10,12 +10,10 @@ import steveJobs from "../assets/QuotesPersonalityImage/steveJobs.png";
 const About = () => {
   return (
     <Layout>
-      <div className="pl-20 pt-10 flex flex-col text-white">
-        {/* creating the about page main section */}
-        <div className="flex items-center gap-5 mx-10">
-          {/* out moto section */}
-          <section className="w-1/2 space-y-10">
-            <h1 className="text-5xl text-yellow-500 font-semibold">
+      <div className="pl-20 max-md:pl-0 pt-10 flex flex-col text-white">
+        <div className="flex items-center gap-5 mx-10 max-md:flex-col-reverse max-md:mx-6">
+          <section className="w-1/2 space-y-10 max-md:w-full">
+            <h1 className="text-5xl text-yellow-500 font-semibold max-md:text-xxl">
               Affordable and Quality Education
             </h1>
             <p className="text-xl text-gray-200">
@@ -27,8 +25,7 @@ const About = () => {
             </p>
           </section>
 
-          {/* our moto image section */}
-          <div className="w-1/2">
+          <div className="w-1/2 max-md:w-full">
             <img
               id="test1"
               style={{
@@ -41,8 +38,7 @@ const About = () => {
           </div>
         </div>
 
-        {/* top personalities quotes section */}
-        <div className="carousel m-auto w-1/2 my-16">
+        <div className="carousel m-auto w-1/2 my-16 max-md:w-full">
           <div id="slide1" className="carousel-item relative w-full">
             <div className="flex flex-col items-center justify-center gap-4 px-[15%]">
               {/* for personality image */}

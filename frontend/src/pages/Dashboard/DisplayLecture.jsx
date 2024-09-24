@@ -29,19 +29,16 @@ const DisplayLecture = () => {
 
     return (
         <Layout>
-            <div className="flex flex-col gap-10 items-center justify-center min-h-[80vh] text-white bg-gray-900 py-10">
+            <div className="flex flex-col gap-10 items-center justify-center min-h-[80vh] text-white bg-gray-900 py-10 w-full max-md:p-4">
 
-                {/* Course Title */}
-                <div className="text-center text-3xl font-semibold text-yellow-500">
+                <div className="text-center text-3xl max-md:text-xxl font-semibold text-yellow-500">
                     Course Name: {state?.title}
                 </div>
 
-                {/* Conditional Rendering for Lectures */}
                 {(lectures && lectures.length > 0) ? (
-                    <div className="flex justify-center gap-10 w-full max-w-7xl">
+                    <div className="flex justify-center gap-10 w-full max-md:flex-col ">
 
-                        {/* Left Section: Video Player and Details */}
-                        <div className="bg-gray-800 rounded-lg shadow-lg p-4 w-[28rem] h-auto space-y-5">
+                        <div className="bg-gray-800 rounded-lg shadow-lg p-4 w-[28rem] max-md:w-auto h-auto space-y-5">
                             <video
                                 src={lectures && lectures[currentVideo]?.lecture?.secure_url}
                                 className="rounded-lg w-full h-64 object-cover shadow-md"
@@ -64,9 +61,7 @@ const DisplayLecture = () => {
                             </div>
                         </div>
 
-                        {/* Right Section: Lecture List */}
-                        <ul className="bg-gray-800 rounded-lg shadow-lg p-4 w-[28rem] space-y-4 overflow-y-auto max-h-[28rem]">
-                            {/* List Header */}
+                        <ul className="bg-gray-800 rounded-lg shadow-lg p-4 w-[28rem] max-md:w-auto space-y-4 overflow-y-auto max-h-[28rem]">
                             <li className="font-semibold text-xl text-yellow-500 flex items-center justify-between">
                                 <p>Lectures List</p>
                                 {role === "ADMIN" && (
@@ -79,7 +74,6 @@ const DisplayLecture = () => {
                                 )}
                             </li>
 
-                            {/* List of Lectures */}
                             {lectures.map((lecture, idx) => (
                                 <li key={lecture._id} className="space-y-2">
                                     <p
