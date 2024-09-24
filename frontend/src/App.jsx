@@ -19,6 +19,7 @@ import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import DisplayLecture from "./pages/Dashboard/DisplayLecture";
 import AddLecture from "./pages/Dashboard/AddLecture";
+import EditCourse from "./pages/Course/EditCourse";
 
 function App() {
   const isLoggedIn = useSelector((state) => state?.auth?.isLoggedIn);
@@ -36,6 +37,7 @@ function App() {
         <Route element={<RequireAuth allowedRoles={["ADMIN"]} />}>
           <Route path="/course/create" element={<CreateCourse />} />
           <Route path="/course/addlecture" element={<AddLecture />} />
+          <Route path="/course/editcourse" element={<EditCourse />} />
         </Route>
 
         {/* Protected Routes for ADMIN and USER */}

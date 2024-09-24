@@ -22,67 +22,90 @@ const CourseInfo = () => {
 
     return (
         <Layout>
-            <div className='min-h-[80vh]'>
-                <div className="card card-side bg-base-100 shadow-xl">
-                    <figure className='h-[60vh] w-[50vw]'>
+            <div className="min-h-[80vh] flex justify-center items-center bg-gray-800">
+                <div className="card card-side bg-black shadow-2xl rounded-lg flex flex-col lg:flex-row overflow-hidden">
+                    {/* Image Section */}
+                    <figure className="lg:w-[50vw] h-auto">
                         <img
-                            style={{ height: '100%', width: '100%' }}
+                            className="w-full h-full object-cover"
                             src={state?.thumbnail?.secure_url}
-                            alt="Thumnail" />
+                            alt="Thumbnail"
+                        />
                     </figure>
-                    <div className="card-body">
-                        <h2 className="card-title font-bold text-yellow-500 flex justify-center">{state?.title}</h2>
-                        <h3 className='font-bold text-yellow-500 inline'>Course Description: </h3>
-                        <p>{state?.description}</p>
-                        <h3>Course Category: <p className='font-bold text-yellow-500 inline'>{state?.category}</p> </h3>
 
-                        <h3>Total No. of Lectures: <span className='font-bold text-yellow-500 inline'>{state?.numberOfLectures}</span></h3>
-                        <h3>Course Created By: <span className='font-bold text-yellow-500 inline'>{state?.createdBy}</span></h3>
+                    <div className="card-body p-6 lg:p-8 w-full lg:w-1/2 bg-gray-950">
+                        <h2 className="text-3xl font-extrabold text-yellow-500 text-center lg:text-left mb-4">
+                            {state?.title}
+                        </h2>
 
-                        <div className="card-actions flex">
-                            <div className='w-1/3'>
-                                <button onClick={() => navigate(-1)} className="bg-yellow-600 text-xl rounded-md font-bold px-5 py-3 w-full hover:bg-yellow-500 transition-all ease-in-out duration-300">
-                                    Back
+                        <h3 className="text-xl font-semibold text-yellow-500">Course Description:</h3>
+                        <p className="text-lg text-gray-400 mb-4">{state?.description}</p>
+
+                        <h3 className="text-lg">
+                            Course Category:{" "}
+                            <span className="font-bold text-yellow-500">{state?.category}</span>
+                        </h3>
+                        <h3 className="text-lg">
+                            Total No. of Lectures:{" "}
+                            <span className="font-bold text-yellow-500">{state?.numberOfLectures}</span>
+                        </h3>
+                        <h3 className="text-lg">
+                            Course Created By:{" "}
+                            <span className="font-bold text-yellow-500">{state?.createdBy}</span>
+                        </h3>
+
+                        <div className="card-actions mt-6 flex flex-wrap justify-between gap-4">
+                            {/* {role === "ADMIN" || data?.subscription?.status === "active" ? (
+                                <button
+                                    onClick={() => navigate("/course/displaylectures", { state: { ...state } })}
+                                    className="text-l rounded-md font-bold w-full lg:w-1/3 transition-all ease-in-out duration-300 btn btn-md btn-success btn-outline"
+                                >
+                                    Watch Lectures
                                 </button>
-                            </div>
-                            <div className='w-1/3'>
-                                {/* {role === "ADMIN" || data?.subscription?.status === "active" ? (
-                                    <button onClick={() => navigate("/course/displaylectures", { state: { ...state } })} className="bg-yellow-600 text-xl rounded-md font-bold px-5 py-3 w-full hover:bg-yellow-500 transition-all ease-in-out duration-300">
-                                        Watch lectures
-                                    </button>
-                                ) : (
-                                    <button onClick={() => navigate("/checkout")} className="bg-yellow-600 text-xl rounded-md font-bold px-5 py-3 w-full hover:bg-yellow-500 transition-all ease-in-out duration-300">
-                                        Subscribe
-                                    </button>
-                                )
-                                } */}
-                                <button onClick={() => navigate("/course/displaylectures", { state: { ...state } })} className="bg-yellow-600 text-xl rounded-md font-bold px-5 py-3 w-full hover:bg-yellow-500 transition-all ease-in-out duration-300">
-                                    Watch lectures
+                            ) : (
+                                <button onClick={() => navigate("/checkout")} className="text-l rounded-md font-bold w-full lg:w-1/3 transition-all ease-in-out duration-300 btn btn-md btn-info btn-outline">
+                                    Subscribe
                                 </button>
+                            )
+                            } */}
 
-                            </div>
-                            {
-                                role === "ADMIN" && (
-                                    <>
-                                        <div className='w-1/3'>
-                                            <button onClick={() => navigate("/course/editcourse", { state: { ...state } })} className="bg-green-600 text-xl rounded-md font-bold px-5 py-3 w-full hover:bg-green-500 transition-all ease-in-out duration-300">
-                                                Edit Course
-                                            </button>
-                                        </div>
-                                        <div className='w-1/3'>
-                                            <button onClick={() => onCourseDataDelete()} className="bg-red-600 text-xl rounded-md font-bold px-5 py-3 w-full hover:bg-red-500 transition-all ease-in-out duration-300">
-                                                Delete Course
-                                            </button>
-                                        </div>
-                                    </>
-                                )
-                            }
+                            <button
+                                onClick={() => navigate(-1)}
+                                className="text-l rounded-md font-bold w-full lg:w-1/3 transition-all ease-in-out duration-300 btn btn-md btn-primary btn-outline"
+                            >
+                                Back
+                            </button>
 
+                            <button
+                                onClick={() => navigate("/course/displaylectures", { state: { ...state } })}
+                                className="text-l rounded-md font-bold w-full lg:w-1/3 transition-all ease-in-out duration-300 btn btn-md btn-success btn-outline"
+                            >
+                                Watch Lectures
+                            </button>
+
+                            {role === "ADMIN" && (
+                                <>
+                                    <button
+                                        onClick={() => navigate("/course/editcourse", { state: { ...state } })}
+                                        className="text-l rounded-md font-bold w-full lg:w-1/3 transition-all ease-in-out duration-300 btn btn-md btn-secondary btn-outline"
+                                    >
+                                        Edit Course
+                                    </button>
+
+                                    <button
+                                        onClick={() => onCourseDataDelete()}
+                                        className="text-l rounded-md font-bold w-full lg:w-1/3 transition-all ease-in-out duration-300 btn btn-md btn-error btn-outline"
+                                    >
+                                        Delete Course
+                                    </button>
+                                </>
+                            )}
                         </div>
                     </div>
                 </div>
             </div>
         </Layout>
+
     )
 }
 

@@ -24,31 +24,29 @@ const CourseList = () => {
             course.title.toLowerCase().includes(searchQuery.toLowerCase())
         );
     }, [courseData, searchQuery]);
-    
+
     return (
         <Layout>
-            <div className="min-h-[90vh] pt-12 pl-20 flex flex-col gap-10 text-white">
-                <h1 className="text-center text-3xl font-semibold mb-5">
-                    Explore the courses made by 
-                    
+            <div className="min-h-[90vh] pt-12 pl-10 pr-10 flex flex-col gap-10 text-white">
+                <h1 className="text-center text-4xl font-semibold mb-8">
+                    Explore the courses made by{" "}
                     <span className="font-bold text-yellow-500">
-                    <span> Industry experts</span> 
+                        Industry Experts
                     </span>
                 </h1>
-                <div className="mb-10 flex flex-wrap gap-14">
+
+                <div className="mb-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
                     {filteredCourses.length > 0 ? (
                         filteredCourses.map((element) => (
                             <CourseCard key={element._id} data={element} />
                         ))
                     ) : (
-                        <p>No courses found matching your search.</p>
+                        <p className="text-lg">No courses found matching your search.</p>
                     )}
                 </div>
-
-
             </div>
-
         </Layout>
+
     )
 }
 
