@@ -1,43 +1,57 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Layout from "../layout/Layout";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { getInTouch } from "../redux/Slices/statsSlice";
 
 const Contact = () => {
   const dispatch = useDispatch();
+
+  const isLoggedIn = useSelector((state) => state?.auth?.isLoggedIn);
+  const userData = useSelector((state) => state?.auth?.data);
+
   const [data, setData] = useState({
     name: "",
     email: "",
     message: ""
   });
+
+  useEffect(() => {
+    if (isLoggedIn && userData) {
+      setData((prevData) => ({
+        ...prevData,
+        name: userData?.fullName,
+        email: userData?.email
+      }));
+    }
+  }, [isLoggedIn, userData]);
+
   const handleOnChange = (e) => {
-    const {name, value } = e.target;
+    const { name, value } = e.target;
     setData({
       ...data,
       [name]: value
     })
   }
 
-  const onFormSubmit = async(e) => {
+  const onFormSubmit = async (e) => {
     e.preventDefault();
 
-    if(!data.name || !data.email || !data.message) {
+    if (!data.name || !data.email || !data.message) {
       toast("Please enter all fields");
       return
     }
 
     const res = await dispatch(getInTouch(data));
-    if(res?.payload?.success)
+    if (res?.payload?.success)
       setData({
-        name: "",
-        email: "",
+        ...data,
         message: ""
-      });  
+      });
   }
 
   return (
     <Layout>
-      <div className="min-h-[90vh] pt-12 px-10 text-white">
+      <div className="min-h-[80vh] px-10 text-white">
         {/* Page Title */}
         <h1 className="text-center text-4xl font-semibold mb-10">
           Get in <span className="text-yellow-500">Touch</span>
@@ -45,7 +59,7 @@ const Contact = () => {
 
         {/* Contact Section */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-          
+
           {/* Contact Information */}
           <div className="space-y-8 bg-zinc-800 p-8 rounded-lg shadow-lg">
             <h2 className="text-2xl font-bold text-yellow-500">Contact Info</h2>

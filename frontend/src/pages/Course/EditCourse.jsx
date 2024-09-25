@@ -14,7 +14,6 @@ const EditCourse = () => {
     const courseDetails = location.state;
 
     const [isLoading, setIsLoading] = useState(false);
-    console.log('Course Details:', courseDetails);
 
     const [updateCourseData, setUpdateCourseData] = useState({
         id: '',

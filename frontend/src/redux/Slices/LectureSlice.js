@@ -23,7 +23,6 @@ export const getAllLectures = createAsyncThunk("/course/lecture/get", async (c_i
 })
 
 export const addCourseLecture = createAsyncThunk("/course/lectures/add", async (data) => {
-    console.log("from addLecture slice: c_id: ",data)
     try {
         const formData = new FormData();
         formData.append("lecture", data.lectureVideo);
@@ -64,11 +63,9 @@ const lectureSlice = createSlice({
     reducers: {},
     extraReducers: (builder) => {
         builder.addCase(getAllLectures.fulfilled, (state, action) => {
-            console.log(action);
             state.lectures = action?.payload?.lectures;
         })
         .addCase(addCourseLecture.fulfilled, (state, action) => {
-            console.log(action);
             state.lectures = action?.payload?.course?.lectures;
         })
     }

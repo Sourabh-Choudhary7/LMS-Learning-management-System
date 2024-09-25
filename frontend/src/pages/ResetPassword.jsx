@@ -9,7 +9,6 @@ const ResetPassword = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const { resetToken } = useParams();
-    console.log('reset token: ', resetToken);
 
     const [password, setPassword] = useState({
         newPassword: '',

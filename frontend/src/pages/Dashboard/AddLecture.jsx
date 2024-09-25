@@ -23,9 +23,6 @@ const AddLecture = () => {
         lectureVideo: undefined
     });
 
-    console.log("from addLecture page: c_id: ", courseDetails?._id)
-
-
     useEffect(() => {
         if (!courseDetails) {
             navigate("/courses");

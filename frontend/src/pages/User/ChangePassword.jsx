@@ -62,7 +62,6 @@ const ChangePassword = () => {
     // formData.append("oldPassword", password.oldPassword);
     // formData.append("newPassword", password.newPassword);
     // Send as JSON object
-    // console.log('Form Data:', [...formData.entries()]);
 
     const payload = {
       oldPassword: password.oldPassword,
@@ -70,8 +69,6 @@ const ChangePassword = () => {
     };
 
     const res = await dispatch(changePassword(payload));
-
-    console.log("Response:", res)
 
     if (res?.payload?.success)
       navigate("/user/profile");

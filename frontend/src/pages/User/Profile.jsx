@@ -1,10 +1,12 @@
 import React from 'react';
 import Layout from '../../layout/Layout';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 
 const Profile = () => {
     const userData = useSelector((state) => state?.auth?.data)
+    const navigate = useNavigate();
+
     const handleCancellation = () => {
 
     }
@@ -36,12 +38,12 @@ const Profile = () => {
                                 <button>Change password</button>
 
                             </Link>
-                            <Link
-                                to="/user/editprofile"
+                            <button
+                                onClick={() => navigate("/user/editprofile", { state: { ...userData } })}
                                 className="w-1/2 bg-blue-600 hover:bg-blue-500 transition-all ease-in-out duration-300 rounded-md font-semibold py-2 cursor-pointer text-center m-2 text-white">
                                 <button>Edit profile</button>
 
-                            </Link>
+                            </button>
                         </div>
                         <div className='mx-2 mb-2'>
                             {userData?.subscription?.status === "Inactive" && (

@@ -13,15 +13,11 @@ const Layout = ({ children }) => {
 
     const dispatch = useDispatch();
     const navigate = useNavigate();
-    // const [userData, setUserData] = useState(null);
 
-    // checking user if user is logged in
     const isLoggedIn = useSelector((state) => state?.auth?.isLoggedIn)
     const userData = useSelector((state) => state?.auth?.data);
-    console.log(userData?.fullName);
 
     // for displaying the options accourding to the role
-
     const role = useSelector((state) => state?.auth?.role);
 
     async function handleLogout(e) {
@@ -30,19 +26,10 @@ const Layout = ({ children }) => {
         if (res?.payload?.success)
             navigate("/");
     }
-    // const fetchUserData = async () => {
-    //     const res = await dispatch(getUserData());
-    //     // setUserData(res?.payload?.data);
-    //     return res
-    // };
-    // useEffect(() => {
-    //     fetchUserData();
-    // }, []);
 
 
     return (
-        <div className=''>
-
+        <div>
             <div className="drawer z-10 ">
                 <input id="my-drawer" type="checkbox" className="drawer-toggle" />
                 <div className="drawer-content">

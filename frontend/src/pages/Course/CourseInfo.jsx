@@ -11,7 +11,6 @@ const CourseInfo = () => {
 
     const { state } = useLocation();
     const { role, data } = useSelector((state) => state.auth);
-    console.log(state);
 
     const onCourseDataDelete = async () => {
 

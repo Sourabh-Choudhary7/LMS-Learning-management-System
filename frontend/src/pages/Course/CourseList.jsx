@@ -8,7 +8,6 @@ const CourseList = () => {
     const dispatch = useDispatch();
 
     const { courseData, searchQuery } = useSelector((state) => state.course);
-    console.log("courseData:", courseData)
 
     async function loadCourses() {
         await dispatch(getAllCourses());

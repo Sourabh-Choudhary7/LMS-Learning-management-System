@@ -97,7 +97,6 @@ const Signup = () => {
 
         // calling create account action
         const res = await dispatch(createAccount(formData));
-        console.log(res);
         // redirect to login page if true
         if (res?.payload?.success)
             navigate('/login');

@@ -11,18 +11,15 @@ const DisplayLecture = () => {
 
     const { lectures } = useSelector((state) => state.lecture);
     const { role } = useSelector((state) => state?.auth)
-    console.log("lectiure: ", lectures)
 
     const [currentVideo, setCurrentVideo] = useState(0);
 
     useEffect(() => {
-        console.log(state._id)
         if (!state) navigate("/courses")
         dispatch(getAllLectures(state._id))
     }, [])
 
     const onLectureDelete = async (courseId, lectureId) => {
-        console.log(courseId, lectureId);
         await dispatch(removeCourseLecture({ courseId: courseId, lectureId: lectureId }));
         await dispatch(getAllLectures(courseId));
     }

@@ -27,7 +27,6 @@ export const getStatsData = createAsyncThunk("getstat", async () => {
 });
 
 export const getInTouch = createAsyncThunk("/contact", async (data) => {
-    console.log("formData", data)
     try {
         let res = axiosInstance.post("/contact", data);
 
