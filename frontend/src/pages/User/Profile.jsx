@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Layout from '../../layout/Layout';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
@@ -6,6 +6,11 @@ import { useSelector } from 'react-redux';
 const Profile = () => {
     const userData = useSelector((state) => state?.auth?.data)
     const navigate = useNavigate();
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const toggleModal = () => {
+        setIsModalOpen(!isModalOpen);
+    }
+
 
     const handleCancellation = () => {
 
@@ -16,7 +21,7 @@ const Profile = () => {
                 <div className="flex justify-center mt-12">
                     <div className="max-w-sm w-full bg-white shadow-md rounded-lg overflow-hidden">
                         <div className="bg-yellow-600 h-32"></div>
-                        <div className="flex justify-center -mt-16">
+                        <div className="flex justify-center -mt-16 cursor-pointer" onClick={toggleModal}>
                             <img
                                 className="w-32 h-32 object-cover rounded-full border-4 border-white"
                                 src={userData?.avatar?.secure_url}
@@ -54,6 +59,24 @@ const Profile = () => {
                         </div>
                     </div>
                 </div>
+                {/* Modal to show the enlarged image */}
+                {isModalOpen && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={toggleModal}>
+                        <div className="relative">
+                            <button
+                                className="absolute top-2 right-2 text-white text-2xl"
+                                onClick={toggleModal}
+                            >
+                                &times;
+                            </button>
+                            <img
+                                className="w-[70vw] h-[70vh] object-contain"
+                                src={userData?.avatar?.secure_url}
+                                alt="Enlarged Profile"
+                            />
+                        </div>
+                    </div>
+                )}
             </div>
         </Layout>
     );

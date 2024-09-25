@@ -86,17 +86,18 @@ const Layout = ({ children }) => {
                                     <div className='flex justify-between items-center absolute bottom-0'>
                                         <li>
                                             <Link to={"/login"}>
-                                                <button className='btn btn-sm btn-outline btn-primary px-8'>Login</button>
+                                                <div className='btn btn-sm btn-outline btn-primary px-8'>Login</div>
                                             </Link>
                                         </li>
                                         <li>
                                             <Link to={"/signup"}>
-                                                <button className='btn btn-sm btn-outline btn-secondary px-8'>Signup</button>
+                                                <div className='btn btn-sm btn-outline btn-secondary px-8'>Signup</div>
                                             </Link>
                                         </li>
                                     </div>
                                 )
                             }
+
                             {
                                 isLoggedIn && (
                                     <div className='flex justify-center items-center absolute bottom-0'>

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Layout from '../../layout/Layout';
-import { FaUserAlt } from 'react-icons/fa';
+import { FaUserAlt, FaCamera } from 'react-icons/fa';
 import { BsPersonCircle } from 'react-icons/bs';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { AiOutlineArrowLeft } from 'react-icons/ai';
@@ -79,9 +79,9 @@ const EditProfile = () => {
             </div>
             <div className="bg-yellow-600 h-20"></div>
             <form noValidate action="" onSubmit={handleUpdateUserProfile}>
-              <div className="flex justify-center -mt-16">
+              <div className="flex justify-center -mt-16 relative">
                 <figure>
-                  <label htmlFor="image_uploads" className="cursor-pointer flex">
+                  <label htmlFor="image_uploads" className="cursor-pointer flex relative">
                     {editData.previewImage ? (
                       <img
                         className="w-32 h-32 object-cover rounded-full border-4 border-white"
@@ -91,6 +91,11 @@ const EditProfile = () => {
                     ) : (
                       <BsPersonCircle className="w-32 h-32 object-cover rounded-full border-4 border-white" />
                     )}
+
+                    {/* Camera Icon Overlay */}
+                    <div className="absolute bottom-2 right-2 bg-gray-800 p-1 rounded-full text-white">
+                      <FaCamera />
+                    </div>
                   </label>
                   <input
                     onChange={getImage}
@@ -127,6 +132,7 @@ const EditProfile = () => {
         </div>
       </div>
     </Layout>
+
   );
 };
 
