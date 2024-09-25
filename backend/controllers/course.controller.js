@@ -112,23 +112,60 @@ const getLecturesByCourseId = async (req, res, next) => {
 }
 
 const updateCourseById = async (req, res, next) => {
-
   try {
     const { id } = req.params;
 
-    const course = await Course.findByIdAndUpdate(
-      id,
-      {
-        $set: req.body, // This will only update the fields which are present
-      },
-      {
-        runValidators: true, // This will run the validation checks on the new data
-      }
-    );
+    // Find the course by ID
+    let course = await Course.findById(id);
 
     if (!course) {
       return next(new AppError('Course not found, please try again.', 404));
     }
+
+    course = await Course.findByIdAndUpdate(
+      id,
+      {
+        $set: req.body, // This will update only the fields present in the req.body
+      },
+      {
+        new: true, // Return the updated course
+        runValidators: true, // Run validation on the new data
+      }
+    );
+
+    // If a file is attached, handle the file upload
+    if (req.file) {
+      try {
+        // Upload the file to Cloudinary
+        const result = await cloudinary.v2.uploader.upload(req.file.path, {
+          folder: 'lms', // Save files in the "lms" folder
+        });
+
+        // Update the thumbnail with the new file's public_id and secure_url
+        if (result) {
+          course.thumbnail.public_id = result.public_id;
+          course.thumbnail.secure_url = result.secure_url;
+        }
+
+        // Remove the file from local storage after successful upload
+        fs.rm(`uploads/${req.file.filename}`);
+      } catch (error) {
+        // Clean up the uploads directory if something goes wrong
+        for (const file of await fs.readdir('uploads/')) {
+          await fs.unlink(path.join('uploads/', file));
+        }
+
+        return next(
+          new AppError(
+            JSON.stringify(error) || 'File not uploaded, please try again',
+            400
+          )
+        );
+      }
+    }
+
+    // Save the updated course with the new thumbnail (if applicable)
+    await course.save();
 
     res.status(200).json({
       success: true,
@@ -138,8 +175,8 @@ const updateCourseById = async (req, res, next) => {
   } catch (error) {
     return next(new AppError(error.message, 500));
   }
+};
 
-}
 
 const addLectureToCourseById = async (req, res, next) => {
   const { title, description } = req.body;
