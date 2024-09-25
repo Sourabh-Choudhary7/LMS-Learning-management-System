@@ -69,41 +69,19 @@ const EditCourse = () => {
     // Handle form submission
     const handleOnEditCourse = async (e) => {
         e.preventDefault();
-
-        const { title, description, createdBy, category, thumbnail } = updateCourseData;
-
         if (!updateCourseData.title || !updateCourseData.description || !updateCourseData.createdBy || !updateCourseData.category) {
             toast.error("Please add all the fields");
             return;
         }
 
-        // const formData = new FormData();
-        // formData.append("title", title);
-        // formData.append("description", description);
-        // formData.append("createdBy", createdBy);
-        // formData.append("category", category);
-        // if (thumbnail) {
-        //   formData.append("thumbnail", thumbnail);
-        // }
-        // const payload = {
-        //     title: updateCourseData.title,
-        //     description: updateCourseData.description,
-        //     thumbnail: updateCourseData.thumbnail,
-        //     createdBy: updateCourseData.createdBy,
-        //     category: updateCourseData.category
-
-        // }
         setIsLoading(true);
 
         const res = await dispatch(updateCourse([updateCourseData.id, updateCourseData]));
-        dispatch(getAllCourses())
+        await dispatch(getAllCourses())
         if (res?.payload?.success) {
             setIsLoading(false);
             navigate(-2);
         }
-
-
-
     };
 
     return (

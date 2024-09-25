@@ -56,28 +56,30 @@ export const removeCourse = createAsyncThunk("/course/delete", async (id) => {
 });
 
 export const updateCourse = createAsyncThunk("/course/update", async (data) => {
-    console.log("from update course slice: ", data)
     const formData = new FormData();
-    formData.append("title", data.title);
-    formData.append("description", data.description);
-    formData.append("createdBy", data.createdBy);
-    formData.append("category", data.category);
-    if (data.thumbnail) {
-        formData.append("thumbnail", data.thumbnail);
+    formData.append("title", data[1].title);
+    formData.append("description", data[1].description);
+    formData.append("createdBy", data[1].createdBy);
+    formData.append("category", data[1].category);
+    
+    if (data[1].thumbnail) {
+        formData.append("thumbnail", data[1].thumbnail);
     }
+
     try {
-        let res = axiosInstance.put(`/courses/${data[0]}`, formData);
+        let res = axiosInstance.put(`/courses/${data[0]}`, formData);  // Check if data[0] holds the correct course ID
         toast.promise(res, {
             loading: "Updating course data...",
             success: "Course updated successfully",
             error: "Failed to update the course",
         });
-        return (await res).data
+        return (await res).data;
     } catch (error) {
         toast.error(error?.response?.data?.message);
         throw error;
     }
-})
+});
+
 
 
 const courseSlice = createSlice({
@@ -94,7 +96,6 @@ const courseSlice = createSlice({
     extraReducers: (builder) => {
         builder.addCase(getAllCourses.fulfilled, (state, action) => {
             if (action.payload) {
-                // console.log("Courses payload:", action.payload);
                 state.courseData = [...action.payload];
             }
         });
