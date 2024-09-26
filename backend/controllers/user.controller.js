@@ -116,9 +116,9 @@ const login = async (req, res, next) => {
             );
         }
 
-        console.log("user two factor:",user.twoFactorAuth);
+        console.log("user two factor:", user.twoFactorAuth);
         // Check if 2FA is enabled for the user
-      if (user.twoFactorAuth === true) {
+        if (user.twoFactorAuth === true) {
             // Generate 4-digit OTP
             const otp = user.enableTwoFactorAuth();
 
@@ -128,7 +128,7 @@ const login = async (req, res, next) => {
             // Send OTP to user's email
             const subject = 'Your OTP for 2FA';
             const message = `Your OTP for login is: ${otp}. It is valid for 10 minutes.`;
-            
+
             try {
                 await sendEmail(user.email, subject, message);
                 return res.status(200).json({
@@ -202,6 +202,42 @@ const twoFactorAuthentication = async (req, res, next) => {
         next(new AppError(error.message, 500));
     }
 };
+
+const toggleTwoFactorAuth = async (req, res, next) => {
+    const { userId } = req.body;
+
+    try {
+        const user = await User.findById(userId);
+
+        if (!user) {
+            return next(new AppError('User not found', 400))
+        }
+
+        // Toggle the twoFactorAuth field
+        const isTfaEnabled = user.twoFactorAuth;
+        if (isTfaEnabled) {
+            // Disable 2FA
+            user.twoFactorAuth = false;
+            await user.save();
+            return res.json({
+                success: true,
+                message: 'Two-factor authentication disabled.',
+            });
+        } else {
+            // Enable 2FA
+            user.twoFactorAuth = true;
+            await user.save();
+
+            return res.json({
+                success: true,
+                message: 'Two-factor authentication enabled',
+            });
+        }
+
+    } catch (error) {
+        next(new AppError(error.message, 500));
+    }
+}
 
 
 const logout = (req, res) => {
@@ -430,6 +466,7 @@ export {
     register,
     login,
     twoFactorAuthentication,
+    toggleTwoFactorAuth,
     logout,
     getProfile,
     forgotPassword,
