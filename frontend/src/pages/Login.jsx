@@ -39,7 +39,6 @@ const Login = () => {
         }
 
         const response = await dispatch(login(loginData));
-        console.log("Login response payload: ", response.payload);
 
         if (response?.payload?.success) {
             // Check if the response indicates OTP was sent

@@ -10,7 +10,6 @@ const TwoFactorAuthentication = () => {
   const dispatch = useDispatch()
   const navigate = useNavigate();
   const { state } = useLocation();
-  console.log("state", state);
 
   // Handle OTP input change
   const handleChange = (element, index) => {
@@ -50,7 +49,8 @@ const TwoFactorAuthentication = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[80vh] bg-gray-900 text-white">
+    <div className="flex flex-col items-center justify-center min-h-[100vh] bg-gray-900 text-white">
+      <h1 className="text-4xl font-semibold text-white-500 mb-8 text-center">Two Factor Authentication!</h1>
       <h1 className="text-4xl font-semibold text-yellow-500 mb-8">Enter OTP</h1>
       <form onSubmit={handleSubmit} className="flex flex-col items-center space-y-8">
 

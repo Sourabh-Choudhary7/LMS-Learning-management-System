@@ -72,7 +72,6 @@ export const twoFactorAuth = createAsyncThunk("/auth/login/twoStepAuth", async (
 });
 
 export const toggleTwoFactorAuth = createAsyncThunk("/auth/user/toggleTwoFactor", async (userId) => {
-    console.log("userId:", userId)
     try {
         let res = axiosInstance.post("users/toggle-2fa", userId);
 
