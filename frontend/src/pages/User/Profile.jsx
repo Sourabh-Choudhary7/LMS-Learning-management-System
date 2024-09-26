@@ -45,8 +45,7 @@ const Profile = () => {
                             <button
                                 onClick={() => navigate("/user/editprofile", { state: { ...userData } })}
                                 className="w-1/2 bg-blue-600 hover:bg-blue-500 transition-all ease-in-out duration-300 rounded-md font-semibold py-2 cursor-pointer text-center m-2 text-white">
-                                <button>Edit profile</button>
-
+                                Edit profile
                             </button>
                         </div>
                         <div className='mx-2 mb-2'>
