@@ -10,6 +10,7 @@ const ForgotPassword = () => {
   const navigate = useNavigate();
 
   const [email, setEmail] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleUserInputChange = (e) => {
     setEmail(e.target.value);
@@ -24,12 +25,14 @@ const ForgotPassword = () => {
     const payload = {
       email: email
     };
-
+    
+    setIsLoading(true);
     const res = await dispatch(forgotPassword(payload));
     if (res?.payload?.success)
       navigate('/login');
 
     setEmail('');
+    setIsLoading(false);
   }
   return (
     <Layout>
@@ -51,8 +54,8 @@ const ForgotPassword = () => {
                   />
                 </label>
               </div>
-              <button className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition">
-                Get Verification Link
+              <button className={`w-full text-white py-2 rounded-lg transition ${isLoading ? 'cursor-wait bg-gray-500 hover:bg-gray-600' : 'cursor-pointer bg-blue-500 hover:bg-blue-600'}`} disabled={isLoading}>
+                {isLoading ? 'Verification Link is Sending...' : 'Get Verification Link'}
               </button>
               <p className="text-center mt-2">
                 Already have an account ?{" "}
