@@ -3,16 +3,16 @@ import { Link, useNavigate } from 'react-router-dom'
 import { FaEyeSlash, FaEye, FaKey } from "react-icons/fa";
 import { MdOutlineMailOutline } from "react-icons/md";
 import Layout from '../layout/Layout';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { login } from '../redux/Slices/AuthSlice';
 
 const Login = () => {
+
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
     const togglePasswordVisibility = () => {
         setIsPasswordVisible(!isPasswordVisible);
 
     }
-
 
     const [loginData, setLoginData] = useState({
         email: "",
@@ -34,21 +34,23 @@ const Login = () => {
         event.preventDefault();
 
         if (!loginData.email || !loginData.password) {
-            toast.error("Please fill all the fields")
+            toast.error("Please fill all the fields");
             return;
         }
 
-        const response = await dispatch(login(loginData))
-        
-        if (response?.payload?.success)
-            navigate('/');
+        const response = await dispatch(login(loginData));
+        console.log("Login response payload: ", response.payload);
 
-        setLoginData({
-            email: "",
-            password: "",
-        })
-
+        if (response?.payload?.success) {
+            // Check if the response indicates OTP was sent
+            if (response.payload.message.includes("OTP sent")) {
+                navigate('/login/two-factor-auth', { state: { email: loginData.email } }); // Redirect to OTP verification
+            } else {
+                navigate('/'); // Redirect to homepage after successful login without OTP
+            }
+        }
     };
+
 
     return (
         <Layout >

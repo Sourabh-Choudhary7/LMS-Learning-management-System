@@ -6,7 +6,8 @@ const initialState = {
     isLoggedIn: localStorage.getItem('isLoggedIn') || false,
     role: localStorage.getItem('role') || "",
     // data: localStorage.getItem('data') || {}
-    data: localStorage.getItem('data') ? JSON.parse(localStorage.getItem('data')) : null
+    data: localStorage.getItem('data') ? JSON.parse(localStorage.getItem('data')) : null,
+    tfaPending: false,
 }
 // function to handle signup
 export const createAccount = createAsyncThunk("/auth/signup", async (data) => {
@@ -42,6 +43,47 @@ export const login = createAsyncThunk("/auth/login", async (data) => {
         });
 
         // getting response resolved here
+        res = await res;
+        return res.data;
+    } catch (error) {
+        toast.error(error?.response?.data?.message);
+        return rejectWithValue(error?.response?.data);
+    }
+});
+
+export const twoFactorAuth = createAsyncThunk("/auth/login/twoStepAuth", async (data) => {
+    try {
+        let res = axiosInstance.post("users/login/two-factor-auth", data);
+
+        toast.promise(res, {
+            loading: "Verifying the OTP...",
+            success: (data) => {
+                return data?.data?.message;
+            },
+            error: "Failed to log in",
+        });
+
+        res = await res;
+        return res.data;
+    } catch (error) {
+        toast.error(error?.response?.data?.message);
+        return rejectWithValue(error?.response?.data);
+    }
+});
+
+export const toggleTwoFactorAuth = createAsyncThunk("/auth/user/toggleTwoFactor", async (userId) => {
+    console.log("userId:", userId)
+    try {
+        let res = axiosInstance.post("users/toggle-2fa", userId);
+
+        toast.promise(res, {
+            loading: "Setting Two Factor Authentication...",
+            success: (data) => {
+                return data?.data?.message;
+            },
+            error: "Failed to update Two Factor Authentication",
+        });
+
         res = await res;
         return res.data;
     } catch (error) {
@@ -174,12 +216,35 @@ const authSlice = createSlice({
         builder
             // for user login
             .addCase(login.fulfilled, (state, action) => {
-                localStorage.setItem("data", JSON.stringify(action?.payload?.user));
+                if (action.payload.success && action.payload.message.includes("OTP sent")) {
+                    state.isLoggedIn = false; // User is not logged in yet
+                    state.tfaPending = true;   // Set flag indicating 2FA is pending
+                } else if (action.payload.success) {
+                    const { user } = action.payload; // Ensure you have user data to work with
+                    if (user) {
+                        localStorage.setItem("data", JSON.stringify(user));
+                        localStorage.setItem("isLoggedIn", true);
+                        localStorage.setItem("role", user.role);
+                        state.isLoggedIn = true;
+                        state.data = user;
+                        state.role = user.role;
+                        state.tfaPending = false; // Reset if login is successful
+                    }
+                }
+            })
+            // Handle Two-Factor Auth Verification
+            .addCase(twoFactorAuth.fulfilled, (state, action) => {
+                const { user } = action?.payload;
+
+                // Once OTP is verified, store user data and set loggedIn to true
+                localStorage.setItem("data", JSON.stringify(user));
                 localStorage.setItem("isLoggedIn", true);
-                localStorage.setItem("role", action?.payload?.user?.role);
+                localStorage.setItem("role", user?.role);
+
                 state.isLoggedIn = true;
-                state.data = action?.payload?.user;
-                state.role = action?.payload?.user?.role;
+                state.data = user;
+                state.role = user?.role;
+                state.tfaPending = false; // Reset tfaPending after successful OTP verification
             })
             // for user logout
             .addCase(logout.fulfilled, (state) => {

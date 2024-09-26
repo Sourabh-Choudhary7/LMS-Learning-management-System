@@ -20,16 +20,19 @@ import ResetPassword from "./pages/ResetPassword";
 import DisplayLecture from "./pages/Dashboard/DisplayLecture";
 import AddLecture from "./pages/Dashboard/AddLecture";
 import EditCourse from "./pages/Course/EditCourse";
+import Settings from "./pages/Settings/Settings";
+import TwoFactorAuthentication from "./pages/Settings/TwoFactorAuthentication";
 
 function App() {
   const isLoggedIn = useSelector((state) => state?.auth?.isLoggedIn);
-
+  const tfaPending = useSelector((state) => state?.auth?.tfaPending);
   return (
     <>
       <Routes>
         {/* Public Routes */}
         <Route path="/signup" element={!isLoggedIn ? <Signup /> : <Navigate to="/" />} />
         <Route path="/login" element={!isLoggedIn ? <Login /> : <Navigate to="/" />} />
+        <Route path="/login/two-factor-auth" element={(!isLoggedIn && tfaPending) ? <TwoFactorAuthentication /> : <Navigate to="/login" />} />
         <Route path="/forgetpassword" element={<ForgotPassword />} />
         <Route path="/reset-password/:resetToken" element={<ResetPassword />} />
 
@@ -46,6 +49,7 @@ function App() {
           <Route path="/user/editprofile" element={<EditProfile />} />
           <Route path="/changepassword" element={<ChangePassword />} />
           <Route path="/course/displaylectures" element={<DisplayLecture />} />
+          <Route path="/user/setting" element={<Settings />} />
         </Route>
 
         {/* General Routes */}
