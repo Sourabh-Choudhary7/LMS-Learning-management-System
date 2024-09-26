@@ -102,44 +102,107 @@ const register = async (req, res, next) => {
 
 const login = async (req, res, next) => {
     try {
-        // Destructuring the necessary data from req object
         const { email, password } = req.body;
 
-        // Check if the data is there or not, if not throw error message
         if (!email || !password) {
             return next(new AppError('Email and Password are required', 400));
         }
 
-        // Finding the user with the sent email
         const user = await User.findOne({ email }).select('+password');
 
-        // If no user or sent password do not match then send generic response
         if (!(user && (await user.comparePassword(password)))) {
             return next(
                 new AppError('Email or Password do not match or user does not exist', 401)
             );
         }
 
-        // Generating a JWT token
+        console.log("user two factor:",user.twoFactorAuth);
+        // Check if 2FA is enabled for the user
+      if (user.twoFactorAuth === true) {
+            // Generate 4-digit OTP
+            const otp = user.enableTwoFactorAuth();
+
+            // Save user data with OTP
+            await user.save();
+
+            // Send OTP to user's email
+            const subject = 'Your OTP for 2FA';
+            const message = `Your OTP for login is: ${otp}. It is valid for 10 minutes.`;
+            
+            try {
+                await sendEmail(user.email, subject, message);
+                return res.status(200).json({
+                    success: true,
+                    message: 'OTP sent to your email. Please verify it to complete login.',
+                });
+            } catch (error) {
+                user.otp = undefined;
+                user.otpExpiry = undefined;
+                await user.save();
+                return next(new AppError('Failed to send OTP, please try again later', 500));
+            }
+        }
+
         const token = await user.generateJWTToken();
 
-        // Setting the password to undefined so it does not get sent in the response
         user.password = undefined;
 
-        // Setting the token in the cookie with name token along with cookieOptions
         res.cookie('token', token, cookieOptions);
 
-        // If all good send the response to the frontend
+        // Send response to the frontend
         res.status(200).json({
             success: true,
             message: 'User logged in successfully',
             user,
         });
-        console.log(token)
     } catch (error) {
-        next(new AppError(err.message, 500));
+        next(new AppError(error.message, 500));
     }
-}
+};
+
+
+const twoFactorAuthentication = async (req, res, next) => {
+    try {
+        const { email, otp } = req.body;
+
+        // Check if email and OTP are provided
+        if (!email || !otp) {
+            return next(new AppError('Email and OTP are required', 400));
+        }
+
+        // Find the user with the provided email
+        const user = await User.findOne({ email });
+
+        if (!user || !user.twoFactorAuth) {
+            return next(new AppError('Invalid request', 400));
+        }
+
+        // Verify the OTP
+        if (!user.verifyTwoFactorAuth(otp)) {
+            return next(new AppError('Invalid or expired OTP', 400));
+        }
+
+        // Generate JWT after successful OTP verification
+        const token = await user.generateJWTToken();
+
+        // Clear OTP fields after successful login
+        user.otp = undefined;
+        user.otpExpiry = undefined;
+        await user.save();
+
+        // Set JWT in the cookie and send response
+        res.cookie('token', token, cookieOptions);
+
+        res.status(200).json({
+            success: true,
+            message: 'Login successful',
+            user,
+        });
+    } catch (error) {
+        next(new AppError(error.message, 500));
+    }
+};
+
 
 const logout = (req, res) => {
     try {
@@ -366,6 +429,7 @@ const updateUser = async (req, res, next) => {
 export {
     register,
     login,
+    twoFactorAuthentication,
     logout,
     getProfile,
     forgotPassword,

@@ -45,6 +45,12 @@ const userSchema = new Schema(
       enum: ['USER', 'ADMIN'],
       default: 'USER',
     },
+    twoFactorAuth: {
+      type: Boolean,
+      default: false,
+    },
+    otp: String,
+    otpExpiry: Date,
     forgotPasswordToken: String,
     forgotPasswordExpiry: Date,
   },
@@ -93,6 +99,33 @@ userSchema.methods = {
     this.forgotPasswordExpiry = Date.now() + 15 * 60 * 1000;
 
     return resetToken;
+  },
+  // Enable 2FA and generate a 4-digit OTP
+  enableTwoFactorAuth: function () {
+    const otp = Math.floor(1000 + Math.random() * 9000).toString();
+    this.otp = otp;
+    this.otpExpiry = Date.now() + 10 * 60 * 1000;
+    this.twoFactorAuth = true;
+    return otp;
+  },
+
+  // Verify the 4-digit OTP
+  verifyTwoFactorAuth: function (enteredOtp) {
+    const isOtpValid =
+      this.otp === enteredOtp &&
+      this.otpExpiry > Date.now();
+    if (isOtpValid) {
+      // Clear OTP after verification
+      this.otp = undefined;
+      this.otpExpiry = undefined;
+    }
+    return isOtpValid;
+  },
+
+  disableTwoFactorAuth: function () {
+    this.twoFactorAuth = false;
+    this.otp = undefined;
+    this.otpExpiry = undefined;
   },
 };
 
