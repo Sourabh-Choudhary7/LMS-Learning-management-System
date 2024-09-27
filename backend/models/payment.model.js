@@ -1,18 +1,31 @@
-import { model, Schema } from 'mongoose';
+import { model, Schema, mongoose } from 'mongoose'
 
 const paymentSchema = new Schema({
-    rezorpay_payment_id: {
+    stripe_payment_intent_id: {
         type: String,
         required: true
     },
-    razorpay_subscription_id: {
+    stripe_subscription_id: {
         type: String,
         required: true
     },
-    razorpay_signature: {
+    stripe_signature: {
         type: String,
         required: true
-    }
+    },
+    user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true,
+      },
+      amount: {
+        type: Number,
+        required: true,
+      },
+      currency: {
+        type: String,
+        required: true,
+      }
 }, {
     timestamps: true
 });

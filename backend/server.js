@@ -1,7 +1,7 @@
 import app from './app.js';
 import connectionToDB from './config/dbConnection.js';
 import cloudinary from 'cloudinary'
-import Razorpay from 'razorpay';
+import Stripe from 'stripe';
 
 const PORT = process.env.PORT || 5000;
 
@@ -12,11 +12,8 @@ cloudinary.v2.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-// Razorpay configuration
-export const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID,
-  key_secret: process.env.RAZORPAY_SECRET,
-});
+// Stripe configuration
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 app.listen(PORT, async () => {
   await connectionToDB();

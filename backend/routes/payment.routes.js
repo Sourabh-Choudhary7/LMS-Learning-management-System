@@ -1,14 +1,14 @@
 import { Router } from "express";
-import { allPayments, buySubscription, cancelSubscription, getRazorpayApiKey, verifySubscription } from "../controllers/payment.controller.js";
+import { allPayments, buySubscription, cancelSubscription, getStripeApiKey, verifySubscription } from "../controllers/payment.controller.js";
 import { authorizeRoles, isLoggedIn } from "../middlewares/auth.middleware.js";
 
 const router = Router();
 
 router
-    .route('/razorpay-key')
+    .route('/stripe-key')
     .get(
         isLoggedIn,
-        getRazorpayApiKey
+        getStripeApiKey
     );
 
 router
@@ -25,6 +25,13 @@ router
         verifySubscription
     );
 
+// router
+//     .route('/webhook')
+//     .post(
+//         isLoggedIn,
+//         stripeWebhook
+//     );
+
 router
     .route('/unsubscribe')
     .post(
@@ -38,8 +45,6 @@ router
         isLoggedIn,
         authorizeRoles('ADMIN'),
         allPayments
-    )
+    );
 
 export default router;
-
-

@@ -1,8 +1,14 @@
-import crypto from 'crypto';
+import Stripe from 'stripe';
 import User from '../models/user.model.js';
 import AppError from '../utils/error.utils.js';
-import { razorpay } from '../server.js';
 import Payment from '../models/payment.model.js';
+import dotenv from 'dotenv';
+
+dotenv.config();
+
+// Initialize Stripe with your secret key
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+const YOUR_DOMAIN = process.env.FRONTEND_URL;
 
 /**
  * @ACTIVATE_SUBSCRIPTION
@@ -10,41 +16,57 @@ import Payment from '../models/payment.model.js';
  * @ACCESS Private (Logged in user only)
  */
 export const buySubscription = async (req, res, next) => {
-  // Extracting ID from request obj
   const { id } = req.user;
-
-  // Finding the user based on the ID
   const user = await User.findById(id);
 
   if (!user) {
     return next(new AppError('Unauthorized, please login'));
   }
 
-  // Checking the user role
   if (user.role === 'ADMIN') {
     return next(new AppError('Admin cannot purchase a subscription', 400));
   }
 
-  // Creating a subscription using razorpay that we imported from the server
-  const subscription = await razorpay.subscriptions.create({
-    plan_id: process.env.RAZORPAY_PLAN_ID, // The unique plan ID
-    customer_notify: 1, // 1 means razorpay will handle notifying the customer, 0 means we will not notify the customer
-    total_count: 12, // 12 means it will charge every month for a 1-year sub.
-  });
+  try {
+    // Create a Stripe customer if they don't exist
+    const customer = await stripe.customers.create({
+      email: user.email,
+      name: user.name,
+    });
 
-  // Adding the ID and the status to the user account
-  user.subscription.id = subscription.id;
-  user.subscription.status = subscription.status;
+    // Create a Stripe Checkout Session
+    const session = await stripe.checkout.sessions.create({
+      // billing_address_collection: 'auto',
+      payment_method_types: ['card'],
+      mode: 'subscription',
+      customer: customer.id,
+      line_items: [
+        {
+          price: process.env.STRIPE_PLAN_ID, // Ensure this is a valid price ID
+          quantity: 1,
+        },
+      ],
+      success_url: `${YOUR_DOMAIN}/?success=true&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${YOUR_DOMAIN}?canceled=true`,
+    });
 
-  // Saving the user object
-  await user.save();
+    // Retrieve the subscription ID from the session object and store it
+    user.subscription.id = session.id;
+    user.subscription.status = 'pending';
+    await user.save();
 
-  res.status(200).json({
-    success: true,
-    message: 'subscribed successfully',
-    subscription_id: subscription.id,
-  });
+    // Respond with the Checkout Session URL
+    res.status(200).json({
+      success: true,
+      message: 'Subscription created successfully',
+      url: session.url,
+    });
+  } catch (error) {
+    console.error(error); // Log the error for debugging
+    return next(new AppError(error.message, 500));
+  }
 };
+
 
 /**
  * @VERIFY_SUBSCRIPTION
@@ -53,46 +75,58 @@ export const buySubscription = async (req, res, next) => {
  */
 export const verifySubscription = async (req, res, next) => {
   const { id } = req.user;
-  const { razorpay_payment_id, razorpay_subscription_id, razorpay_signature } =
-    req.body;
+  const { session_id } = req.body;
 
-  // Finding the user
-  const user = await User.findById(id);
-
-  // Getting the subscription ID from the user object
-  const subscriptionId = user.subscription.id;
-
-  // Generating a signature with SHA256 for verification purposes
-  // Here the subscriptionId should be the one which we saved in the DB
-  // razorpay_payment_id is from the frontend and there should be a '|' character between this and subscriptionId
-  // At the end convert it to Hex value
-  const generatedSignature = crypto
-    .createHmac('sha256', process.env.RAZORPAY_SECRET)
-    .update(`${razorpay_payment_id}|${subscriptionId}`)
-    .digest('hex');
-
-  // Check if generated signature and signature received from the frontend is the same or not
-  if (generatedSignature !== razorpay_signature) {
-    return next(new AppError('Payment not verified, please try again.', 400));
+  if (!session_id) {
+    return next(new AppError('Session ID is required', 400));
   }
 
-  // If they match create payment and store it in the DB
-  await Payment.create({
-    razorpay_payment_id,
-    razorpay_subscription_id,
-    razorpay_signature,
-  });
+  try {
+    // Retrieve the Checkout session from Stripe
+    const session = await stripe.checkout.sessions.retrieve(session_id);
 
-  // Update the user subscription status to active (This will be created before this)
-  user.subscription.status = 'active';
+    if (session.mode === 'subscription') {
+      const subscriptionId = session.subscription;
 
-  // Save the user in the DB with any changes
-  await user.save();
+      // If payment_intent is not available, try to retrieve the invoice
+      let paymentIntentId = session.payment_intent;
+      if (!paymentIntentId) {
+        const invoice = await stripe.invoices.retrieve(session.invoice);
+        paymentIntentId = invoice.payment_intent; // Get the payment intent from the invoice
+      }
 
-  res.status(200).json({
-    success: true,
-    message: 'Payment verified successfully',
-  });
+      if (!paymentIntentId) {
+        return next(new AppError('Payment intent is not available', 400));
+      }
+      const user = await User.findById(id);
+
+      // Create payment record
+      const paymentRecord = await Payment.create({
+        stripe_payment_intent_id: paymentIntentId,
+        stripe_signature: session.id, // Use session ID as a signature placeholder or adjust accordingly
+        stripe_subscription_id: subscriptionId,
+        user: user._id,
+        amount: session.amount_total,
+        currency: session.currency,
+      });
+
+      // Update the user's subscription status in the database
+      user.subscription.id = subscriptionId;
+      user.subscription.status = 'active';
+      await user.save();
+
+      return res.status(200).json({
+        success: true,
+        message: 'Payment verified successfully',
+        payment: paymentRecord, // Return the created payment record if needed
+      });
+    } else {
+      return next(new AppError('Session is not for a subscription', 400));
+    }
+  } catch (error) {
+    console.error('Error verifying subscription:', error);
+    return next(new AppError(error.message, 500));
+  }
 };
 
 /**
@@ -100,50 +134,46 @@ export const verifySubscription = async (req, res, next) => {
  * @ROUTE @POST {{URL}}/api/v1/payments/unsubscribe
  * @ACCESS Private (Logged in user only)
  */
+
 export const cancelSubscription = async (req, res, next) => {
   const { id } = req.user;
 
-  // Finding the user
   const user = await User.findById(id);
 
   // Checking the user role
   if (user.role === 'ADMIN') {
     return next(
-      new AppError('Admin does not need to cannot cancel subscription', 400)
+      new AppError('Admin cannot cancel subscription', 400)
     );
   }
 
-  // Finding subscription ID from subscription
+  // Finding subscription ID from user
   const subscriptionId = user.subscription.id;
-
-  // Creating a subscription using razorpay that we imported from the server
+  // Cancel the subscription using Stripe
   try {
-    const subscription = await razorpay.subscriptions.cancel(
-      subscriptionId // subscription id
-    );
+    const subscription = await stripe.subscriptions.cancel(subscriptionId); // Delete the subscription
 
-    // Adding the subscription status to the user account
+    // Update the user's subscription status
     user.subscription.status = subscription.status;
 
-    // Saving the user object
+    // Save the user object
     await user.save();
   } catch (error) {
-    // Returning error if any, and this error is from razorpay so we have statusCode and message built in
-    return next(new AppError(error.error.description, error.statusCode));
+    return next(new AppError(error.message, error.statusCode || 500));
   }
 
   // Finding the payment using the subscription ID
   const payment = await Payment.findOne({
-    razorpay_subscription_id: subscriptionId,
+    stripe_subscription_id: subscriptionId,
   });
 
-  // Getting the time from the date of successful payment (in milliseconds)
+  // Calculate time since subscribed
   const timeSinceSubscribed = Date.now() - payment.createdAt;
 
-  // refund period which in our case is 14 days
+  // Define refund period (14 days)
   const refundPeriod = 14 * 24 * 60 * 60 * 1000;
 
-  // Check if refund period has expired or not
+  // Check if refund period has expired
   if (refundPeriod <= timeSinceSubscribed) {
     return next(
       new AppError(
@@ -153,16 +183,22 @@ export const cancelSubscription = async (req, res, next) => {
     );
   }
 
-  // If refund period is valid then refund the full amount that the user has paid
-  await razorpay.payments.refund(payment.razorpay_payment_id, {
-    speed: 'optimum', // This is required
-  });
+  // If refund period is valid, issue a refund
+  try {
+    await stripe.refunds.create({
+      payment_intent: payment.stripe_payment_intent_id, // Assuming this ID is stored in Payment model
+      amount: payment.amount, // Full refund
+    });
+  } catch (error) {
+    return next(new AppError(error.message, error.statusCode || 500));
+  }
 
-  user.subscription.id = undefined; // Remove the subscription ID from user DB
-  user.subscription.status = undefined; // Change the subscription Status in user DB
+  // Clean up user subscription details
+  user.subscription.id = undefined;
+  user.subscription.status = undefined;
 
   await user.save();
-  await payment.remove();
+  await payment.deleteOne();
 
   // Send the response
   res.status(200).json({
@@ -172,30 +208,29 @@ export const cancelSubscription = async (req, res, next) => {
 };
 
 /**
- * @GET_RAZORPAY_ID
- * @ROUTE @POST {{URL}}/api/v1/payments/razorpay-key
+ * @GET_STRIPE_API_KEY
+ * @ROUTE @GET {{URL}}/api/v1/payments/stripe-key
  * @ACCESS Public
  */
-export const getRazorpayApiKey = async (_req, res, _next) => {
+export const getStripeApiKey = async (_req, res) => {
   res.status(200).json({
     success: true,
-    message: 'Razorpay API key',
-    key: process.env.RAZORPAY_KEY_ID,
+    key: process.env.STRIPE_PUBLISHABLE_KEY,
   });
 };
 
 /**
- * @GET_RAZORPAY_ID
+ * @ALL_PAYMENTS
  * @ROUTE @GET {{URL}}/api/v1/payments
  * @ACCESS Private (ADMIN only)
  */
 export const allPayments = async (req, res, _next) => {
   const { count, skip } = req.query;
 
-  // Find all subscriptions from razorpay
-  const allPayments = await razorpay.subscriptions.all({
-    count: count ? count : 10, // If count is sent then use that else default to 10
-    skip: skip ? skip : 0, // // If skip is sent then use that else default to 0
+  // Fetch all subscriptions from Stripe
+  const allPayments = await stripe.subscriptions.list({
+    limit: count ? parseInt(count) : 10, // If count is sent then use that else default to 10
+    starting_after: skip ? skip : undefined, // If skip is sent then use that else default to undefined
   });
 
   const monthNames = [
@@ -213,42 +248,30 @@ export const allPayments = async (req, res, _next) => {
     'December',
   ];
 
-  const finalMonths = {
-    January: 0,
-    February: 0,
-    March: 0,
-    April: 0,
-    May: 0,
-    June: 0,
-    July: 0,
-    August: 0,
-    September: 0,
-    October: 0,
-    November: 0,
-    December: 0,
-  };
+  // Initialize a record to count monthly payments
+  const finalMonths = monthNames.reduce((acc, month) => {
+    acc[month] = 0; // Initialize each month to 0
+    return acc;
+  }, {});
 
-  const monthlyWisePayments = allPayments.items.map((payment) => {
-    // We are using payment.start_at which is in unix time, so we are converting it to Human readable format using Date()
-    const monthsInNumbers = new Date(payment.start_at * 1000);
-
-    return monthNames[monthsInNumbers.getMonth()];
+  // Process the payment records to find out the month of each subscription
+  const monthlyWisePayments = allPayments.data.map((payment) => {
+    // Convert the payment.current_period_start which is in unix time to a human-readable format
+    const monthsInNumbers = new Date(payment.current_period_start * 1000);
+    return monthNames[monthsInNumbers.getMonth()]; // Get the month name
   });
 
-  monthlyWisePayments.map((month) => {
-    Object.keys(finalMonths).forEach((objMonth) => {
-      if (month === objMonth) {
-        finalMonths[month] += 1;
-      }
-    });
+  // Count the payments for each month
+  monthlyWisePayments.forEach((month) => {
+    if (finalMonths[month] !== undefined) {
+      finalMonths[month] += 1; // Increment the count for the month
+    }
   });
 
-  const monthlySalesRecord = [];
+  // Prepare the monthly sales record array
+  const monthlySalesRecord = monthNames.map((monthName) => finalMonths[monthName]);
 
-  Object.keys(finalMonths).forEach((monthName) => {
-    monthlySalesRecord.push(finalMonths[monthName]);
-  });
-
+  // Send the response
   res.status(200).json({
     success: true,
     message: 'All payments',
@@ -257,3 +280,45 @@ export const allPayments = async (req, res, _next) => {
     monthlySalesRecord,
   });
 };
+
+/**
+ * @WEBHOOK
+ * @ROUTE @POST {{URL}}/api/v1/payments/webhook
+ * @ACCESS Private
+ */
+// export const stripeWebhook = async (req, res) => {
+//   let event;
+
+//   const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
+//   if (endpointSecret) {
+//     const signature = req.headers['stripe-signature'];
+//     try {
+//       event = stripe.webhooks.constructEvent(req.body, signature, endpointSecret);
+//     } catch (err) {
+//       console.log(`⚠️  Webhook signature verification failed.`, err.message);
+//       return res.sendStatus(400);
+//     }
+//   }
+
+//   let subscription;
+//   let status;
+
+//   switch (event.type) {
+//     case 'customer.subscription.trial_will_end':
+//     case 'customer.subscription.deleted':
+//     case 'customer.subscription.created':
+//     case 'customer.subscription.updated':
+//       subscription = event.data.object;
+//       status = subscription.status;
+//       console.log(`Subscription status is ${status}.`);
+//       break;
+//     case 'entitlements.active_entitlement_summary.updated':
+//       subscription = event.data.object;
+//       console.log(`Active entitlement summary updated for ${subscription}.`);
+//       break;
+//     default:
+//       console.log(`Unhandled event type ${event.type}.`);
+//   }
+
+//   res.send();
+// };
