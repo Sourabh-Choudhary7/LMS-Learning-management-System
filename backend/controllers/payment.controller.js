@@ -46,8 +46,8 @@ export const buySubscription = async (req, res, next) => {
           quantity: 1,
         },
       ],
-      success_url: `${YOUR_DOMAIN}/?success=true&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${YOUR_DOMAIN}?canceled=true`,
+      success_url: `${YOUR_DOMAIN}/checkout/success?success=true&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${YOUR_DOMAIN}/checkout/fail?canceled=true`,
     });
 
     // Retrieve the subscription ID from the session object and store it
@@ -60,6 +60,7 @@ export const buySubscription = async (req, res, next) => {
       success: true,
       message: 'Subscription created successfully',
       url: session.url,
+      subscription_id : session.id
     });
   } catch (error) {
     console.error(error); // Log the error for debugging
