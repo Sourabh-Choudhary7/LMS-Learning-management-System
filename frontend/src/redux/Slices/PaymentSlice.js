@@ -14,6 +14,7 @@ const initialState = {
 export const getStripePayKey = createAsyncThunk("/payments/getStripeKey", async () => {
     try {
         const res = axiosInstance.get("/payments/stripe-key");
+        console.log("key received", res)
         return (await res).data;
     } catch (error) {
         toast.error(error?.response?.data?.message);
@@ -81,9 +82,10 @@ const paymentSlice = createSlice({
     extraReducers: (builder) => {
         builder
             .addCase(getStripePayKey.fulfilled, (state, action) => {
-                state.key = action?.payload?.key;
+                state.stripeKey = action?.payload?.key;
             })
             .addCase(buySubcription.fulfilled, (state, action) => {
+                console.log("action of buySubcription", action)
                 state.subscription_id = action?.payload?.subscription_id;
             })
             .addCase(verifyPayment.fulfilled, (state, action) => {

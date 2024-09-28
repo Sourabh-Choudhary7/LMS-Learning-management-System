@@ -11,6 +11,8 @@
   },
   "dependencies": {
     "@reduxjs/toolkit": "^2.2.7",
+    "@stripe/react-stripe-js": "^2.8.0",
+    "@stripe/stripe-js": "^4.5.0",
     "@tailwindcss/line-clamp": "^0.4.4",
     "axios": "^1.7.7",
     "chart.js": "^4.4.4",

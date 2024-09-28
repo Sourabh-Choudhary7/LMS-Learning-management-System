@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
 import Layout from '../../layout/Layout';
 import { Link, useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import { cancelCourseBundle } from '../../redux/Slices/PaymentSlice';
+import { getUserData } from '../../redux/Slices/AuthSlice';
 
 const Profile = () => {
+    const dispatch = useDispatch();
     const userData = useSelector((state) => state?.auth?.data)
     const navigate = useNavigate();
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -12,8 +15,11 @@ const Profile = () => {
     }
 
 
-    const handleCancellation = () => {
-
+    const handleSubscriptionCancellation = async () => {
+        const res = await dispatch(cancelCourseBundle());
+        if (res?.payload?.success) {
+            await dispatch(getUserData());
+        } 
     }
     return (
         <Layout>
@@ -49,8 +55,8 @@ const Profile = () => {
                             </button>
                         </div>
                         <div className='mx-2 mb-2'>
-                            {userData?.subscription?.status === "Inactive" && (
-                                <button onClick={handleCancellation} className="w-full bg-red-600 hover:bg-red-500 transition-all ease-in-out duration-300 rounded-md font-semibold py-2 cursor-pointer text-center text-white">
+                            {userData?.subscription?.status === "active" && (
+                                <button onClick={handleSubscriptionCancellation} className="w-full bg-red-600 hover:bg-red-500 transition-all ease-in-out duration-300 rounded-md font-semibold py-2 cursor-pointer text-center text-white">
                                     Cancel Subscription
                                 </button>
                             )}

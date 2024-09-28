@@ -22,6 +22,9 @@ import AddLecture from "./pages/Dashboard/AddLecture";
 import EditCourse from "./pages/Course/EditCourse";
 import Settings from "./pages/Settings/Settings";
 import TwoFactorAuthentication from "./pages/Settings/TwoFactorAuthentication";
+import Checkout from "./pages/Payments/Checkout";
+import CheckoutSuccess from "./pages/Payments/CheckoutSuccess";
+import CheckoutFailed from "./pages/Payments/CheckoutFailed";
 
 function App() {
   const isLoggedIn = useSelector((state) => state?.auth?.isLoggedIn);
@@ -50,6 +53,13 @@ function App() {
           <Route path="/changepassword" element={<ChangePassword />} />
           <Route path="/course/displaylectures" element={<DisplayLecture />} />
           <Route path="/user/setting" element={<Settings />} />
+        </Route>
+
+        <Route element={<RequireAuth allowedRoles={["USER"]} />}>
+          <Route path="/checkout" element={<Checkout />} />
+          <Route path="/checkout/success" element={<CheckoutSuccess />} />
+          <Route path="/checkout/fail" element={<CheckoutFailed />} />
+
         </Route>
 
         {/* General Routes */}

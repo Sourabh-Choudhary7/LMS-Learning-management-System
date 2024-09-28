@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import Layout from '../../layout/Layout';
 import { useDispatch, useSelector } from 'react-redux';
 import { getAllCourses, removeCourse } from '../../redux/Slices/CourseSlice';
+import { getUserData } from '../../redux/Slices/AuthSlice';
 
 const CourseInfo = () => {
 
@@ -10,7 +11,7 @@ const CourseInfo = () => {
     const navigate = useNavigate();
 
     const { state } = useLocation();
-    const { role, data } = useSelector((state) => state.auth);
+    const { isLoggedIn, role, data } = useSelector((state) => state.auth);
 
     const onCourseDataDelete = async () => {
 
@@ -18,6 +19,13 @@ const CourseInfo = () => {
         navigate("/courses");
         await dispatch(getAllCourses());
     }
+
+    useEffect(() => {
+        if (isLoggedIn) {
+            dispatch(getUserData());
+        }
+    }, [isLoggedIn, dispatch]);
+    
 
     return (
         <Layout>
@@ -54,7 +62,14 @@ const CourseInfo = () => {
                         </h3>
 
                         <div className="card-actions mt-6 flex flex-wrap justify-between gap-4">
-                            {/* {role === "ADMIN" || data?.subscription?.status === "active" ? (
+                            <button
+                                onClick={() => navigate(-1)}
+                                className="text-l rounded-md font-bold w-full lg:w-1/3 transition-all ease-in-out duration-300 btn btn-md btn-primary btn-outline"
+                            >
+                                Back
+                            </button>
+                            
+                            {role === "ADMIN" || data?.subscription?.status === "active" ? (
                                 <button
                                     onClick={() => navigate("/course/displaylectures", { state: { ...state } })}
                                     className="text-l rounded-md font-bold w-full lg:w-1/3 transition-all ease-in-out duration-300 btn btn-md btn-success btn-outline"
@@ -66,21 +81,7 @@ const CourseInfo = () => {
                                     Subscribe
                                 </button>
                             )
-                            } */}
-
-                            <button
-                                onClick={() => navigate(-1)}
-                                className="text-l rounded-md font-bold w-full lg:w-1/3 transition-all ease-in-out duration-300 btn btn-md btn-primary btn-outline"
-                            >
-                                Back
-                            </button>
-
-                            <button
-                                onClick={() => navigate("/course/displaylectures", { state: { ...state } })}
-                                className="text-l rounded-md font-bold w-full lg:w-1/3 transition-all ease-in-out duration-300 btn btn-md btn-success btn-outline"
-                            >
-                                Watch Lectures
-                            </button>
+                            }
 
                             {role === "ADMIN" && (
                                 <>
