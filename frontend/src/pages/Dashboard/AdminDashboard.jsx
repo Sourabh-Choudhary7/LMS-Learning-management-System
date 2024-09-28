@@ -104,7 +104,7 @@ const AdminDashboard = () => {
 
   return (
     <Layout>
-      <div className="min-h-[80vh] pt-5 flex flex-col flex-wrap gap-10 text-white">
+      <div className="min-h-[80vh] flex flex-col flex-wrap gap-10 text-white">
         <h1 className="text-center text-3xl font-semibold text-yellow-500">
           Admin Dashboard
         </h1>
@@ -115,7 +115,7 @@ const AdminDashboard = () => {
           <div className="flex flex-col items-center gap-10 p-5 shadow-lg rounded-md">
             {/* for displaying the pie chart */}
             <div className="w-80 h-80">
-              <Doughnut data={userData} />
+              <Doughnut data={userData}/>
             </div>
 
             {/* card for user data */}
@@ -138,7 +138,11 @@ const AdminDashboard = () => {
                 <FaUsers className="text-green-500 text-5xl" />
               </div>
             </div>
+            <div>
+          <button className="btn btn-success btn-md btn-outline" onClick={()=> {navigate('/admin/all-users')}}>Users List</button>
           </div>
+          </div>
+          
 
           {/* displaying the sales chart and data */}
           <div className="flex flex-col items-center gap-10 p-5 shadow-lg rounded-md">
@@ -169,6 +173,9 @@ const AdminDashboard = () => {
                 <GiMoneyStack className="text-green-500 text-5xl" />
               </div>
             </div>
+            <div>
+          <button className="btn btn-secondary btn-md btn-outline">Payment Records</button>
+          </div>
           </div>
         </div>
 

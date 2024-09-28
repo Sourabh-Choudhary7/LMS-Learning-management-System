@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 const initialState = {
     allUsersCount: 0,
     subscribedUsersCount: 0,
+    allUsers: []
 };
 
 // function to get the stats data from backend
@@ -25,6 +26,25 @@ export const getStatsData = createAsyncThunk("getstat", async () => {
         toast.error(error?.response?.data?.message);
     }
 });
+
+export const getAllUsers = createAsyncThunk("getAllUsers", async () => {
+    try {
+        const res = axiosInstance.get("/users");
+        toast.promise(res, {
+            loading: "Fetching all users list...",
+            success: (data) => {
+                return data?.data?.message;
+            },
+            error: "Failed to load users list",
+        });
+
+        const response = await res;
+        return response.data;
+    } catch (error) {
+        toast.error(error?.response?.data?.message);
+    }
+});
+
 
 export const getInTouch = createAsyncThunk("/contact", async (data) => {
     try {
@@ -52,10 +72,16 @@ const statsSlice = createSlice({
     initialState,
     reducers: {},
     extraReducers: (builder) => {
-        builder.addCase(getStatsData.fulfilled, (state, action) => {
-            state.allUsersCount = action?.payload?.allUsersCount;
-            state.subscribedUsersCount = action?.payload?.subscribedUsersCount;
-        });
+        builder
+            .addCase(getStatsData.fulfilled, (state, action) => {
+                state.allUsersCount = action?.payload?.allUsersCount;
+                state.subscribedUsersCount = action?.payload?.subscribedUsersCount;
+            })
+            .addCase(getAllUsers.fulfilled, (state, action) => {
+                console.log(action)
+                state.allUsers = [...action?.payload?.data];
+            })
+    
     },
 });
 
