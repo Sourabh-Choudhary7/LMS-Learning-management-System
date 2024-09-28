@@ -104,7 +104,7 @@ const AdminDashboard = () => {
 
   return (
     <Layout>
-      <div className="min-h-[90vh] pt-5 flex flex-col flex-wrap gap-10 text-white">
+      <div className="min-h-[80vh] pt-5 flex flex-col flex-wrap gap-10 text-white">
         <h1 className="text-center text-3xl font-semibold text-yellow-500">
           Admin Dashboard
         </h1>
