@@ -399,7 +399,7 @@ const changePassword = async (req, res, next) => {
     }
 }
 
-const updateUser = async (req, res, next) => {
+const updateUser = async (req, res,) => {
 
     try {
         const { fullName } = req.body;
@@ -460,6 +460,21 @@ const updateUser = async (req, res, next) => {
 
 }
 
+const getAllUsers = async (req, res, next) => {
+    try {
+        const users = await User.find();
+        if (!users) {
+            return next(new AppError('Invalid user id or user does not exist'));
+        }
+        res.status(200).json({
+            success: true,
+            message: 'All Users fetch successfully',
+            data: users
+        });
+    } catch (error) {
+        return next(new AppError(error.message, 500));
+    }
+};
 
 
 export {
@@ -473,4 +488,5 @@ export {
     resetPassword,
     changePassword,
     updateUser,
+    getAllUsers
 };
