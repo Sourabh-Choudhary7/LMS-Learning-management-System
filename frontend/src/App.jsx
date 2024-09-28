@@ -25,6 +25,7 @@ import TwoFactorAuthentication from "./pages/Settings/TwoFactorAuthentication";
 import Checkout from "./pages/Payments/Checkout";
 import CheckoutSuccess from "./pages/Payments/CheckoutSuccess";
 import CheckoutFailed from "./pages/Payments/CheckoutFailed";
+import AdminDashboard from "./pages/Dashboard/AdminDashboard";
 
 function App() {
   const isLoggedIn = useSelector((state) => state?.auth?.isLoggedIn);
@@ -41,6 +42,7 @@ function App() {
 
         {/* Protected Routes for ADMIN */}
         <Route element={<RequireAuth allowedRoles={["ADMIN"]} />}>
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/course/create" element={<CreateCourse />} />
           <Route path="/course/addlecture" element={<AddLecture />} />
           <Route path="/course/editcourse" element={<EditCourse />} />
