@@ -27,6 +27,7 @@ import CheckoutSuccess from "./pages/Payments/CheckoutSuccess";
 import CheckoutFailed from "./pages/Payments/CheckoutFailed";
 import AdminDashboard from "./pages/Dashboard/AdminDashboard";
 import AllUsers from "./pages/Dashboard/AllUsers";
+import PaymentRecords from "./pages/Dashboard/PaymentRecords";
 
 function App() {
   const isLoggedIn = useSelector((state) => state?.auth?.isLoggedIn);
@@ -45,6 +46,7 @@ function App() {
         <Route element={<RequireAuth allowedRoles={["ADMIN"]} />}>
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/admin/all-users" element={<AllUsers />} />
+          <Route path="/admin/payment-records" element={<PaymentRecords />} />
           <Route path="/course/create" element={<CreateCourse />} />
           <Route path="/course/addlecture" element={<AddLecture />} />
           <Route path="/course/editcourse" element={<EditCourse />} />
