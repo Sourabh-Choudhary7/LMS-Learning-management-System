@@ -58,7 +58,7 @@ const Settings = () => {
           <div className="overflow-x-auto">
             <table className="min-w-full  border border-gray-300 rounded-lg shadow-md">
               <thead>
-                <tr className="text-white">
+                <tr className="">
                   <th className="py-2 px-4 border-b text-left font-semibold">IP Address</th>
                   <th className="py-2 px-4 border-b text-left font-semibold">Device</th>
                   <th className="py-2 px-4 border-b text-left font-semibold">Location</th>
@@ -68,7 +68,7 @@ const Settings = () => {
               <tbody>
                 {
                   loginActivity?.map((activity, index) => (
-                    <tr key={activity.id || index} className="text-white">
+                    <tr key={activity.id || index} className={`${darkMode ? "text-white" : "text-black"}`}>
                       <td className="py-2 px-4 border-b">{activity?.ip}</td>
                       <td className="py-2 px-4 border-b">{activity?.device}</td>
                       <td className="py-2 px-4 border-b">{activity?.location?.city}, {activity?.location?.country}</td>
