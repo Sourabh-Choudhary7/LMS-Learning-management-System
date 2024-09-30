@@ -8,6 +8,7 @@ const initialState = {
     // data: localStorage.getItem('data') || {}
     data: localStorage.getItem('data') ? JSON.parse(localStorage.getItem('data')) : null,
     tfaPending: false,
+    loginActivity: localStorage.getItem('loginActivity') ? JSON.parse(localStorage.getItem('loginActivity')) : []
 }
 // function to handle signup
 export const createAccount = createAsyncThunk("/auth/signup", async (data) => {
@@ -210,16 +211,26 @@ const authSlice = createSlice({
     name: 'auth',
     initialState,
     reducers: {
+        setLoginActivity: (state, action) =>{
+            if (action.payload && action.payload.loginActivity) {
+                state.loginActivity = action.payload.loginActivity;
+                localStorage.setItem('loginActivity', JSON.stringify(action.payload.loginActivity));
+            } else {
+                console.error('Invalid action payload:', action.payload);
+            }
+        }
+
     },
     extraReducers: (builder) => {
         builder
             // for user login
             .addCase(login.fulfilled, (state, action) => {
+                console.log("login action: ", action);
                 if (action.payload.success && action.payload.message.includes("OTP sent")) {
                     state.isLoggedIn = false; // User is not logged in yet
                     state.tfaPending = true;   // Set flag indicating 2FA is pending
                 } else if (action.payload.success) {
-                    const { user } = action.payload; // Ensure you have user data to work with
+                    const { user, loginActivity } = action.payload; // Ensure you have user and loginActivity data
                     if (user) {
                         localStorage.setItem("data", JSON.stringify(user));
                         localStorage.setItem("isLoggedIn", true);
@@ -228,9 +239,12 @@ const authSlice = createSlice({
                         state.data = user;
                         state.role = user.role;
                         state.tfaPending = false; // Reset if login is successful
+                        state.loginActivity = loginActivity; // Assuming loginActivity is part of the payload
+                        localStorage.setItem('loginActivity', JSON.stringify(loginActivity)); // Save to local storage
                     }
                 }
             })
+            
             // Handle Two-Factor Auth Verification
             .addCase(twoFactorAuth.fulfilled, (state, action) => {
                 const { user } = action?.payload;
@@ -244,6 +258,7 @@ const authSlice = createSlice({
                 state.data = user;
                 state.role = user?.role;
                 state.tfaPending = false; // Reset tfaPending after successful OTP verification
+                state.loginActivity = action.payload.loginActivity;
             })
             // for user logout
             .addCase(logout.fulfilled, (state) => {
@@ -265,6 +280,6 @@ const authSlice = createSlice({
     }
 });
 
-export const { } = authSlice.actions;
+export const { setLoginActivity } = authSlice.actions;
 export default authSlice.reducer;
 
