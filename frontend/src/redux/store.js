@@ -4,6 +4,7 @@ import courseSliceReducer from './Slices/CourseSlice';
 import lectureSliceReducer from './Slices/LectureSlice';
 import statsSliceReducer from './Slices/statsSlice';
 import PaymentSliceReducer from './Slices/PaymentSlice';
+import modeSliceReducer from './Slices/modeSlice';
 
 
 const store = configureStore({
@@ -13,6 +14,7 @@ const store = configureStore({
         lecture: lectureSliceReducer,
         payment: PaymentSliceReducer,
         stats: statsSliceReducer,
+        mode: modeSliceReducer
     },
     devTools: true
 });

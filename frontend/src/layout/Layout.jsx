@@ -16,6 +16,7 @@ const Layout = ({ children }) => {
 
     const isLoggedIn = useSelector((state) => state?.auth?.isLoggedIn)
     const userData = useSelector((state) => state?.auth?.data);
+    const { darkMode } = useSelector((state) => state?.mode)
 
     // for displaying the options accourding to the role
     const role = useSelector((state) => state?.auth?.role);
@@ -27,10 +28,9 @@ const Layout = ({ children }) => {
             navigate("/");
     }
 
-
     return (
         <div>
-            <div className="drawer z-10 ">
+            <div className="drawer z-10">
                 <input id="my-drawer" type="checkbox" className="drawer-toggle" />
                 <div className="drawer-content">
                     <Navbar isLoggedIn={isLoggedIn} userData={userData} handleLogout={handleLogout} />
@@ -41,7 +41,7 @@ const Layout = ({ children }) => {
                 </div>
                 <div className="drawer-side">
                     <label htmlFor="my-drawer" className="drawer-overlay"></label>
-                    <div className="bg-base-200 text-base-conter h-full w-80 p-4">
+                    <div className={`bg-base-200 text-base-conter h-full w-80 p-4 ${darkMode ? "text-white" : "bg-white text-gray-900"}`}>
                         {/* Close button */}
                         <label htmlFor="my-drawer" className="cursor-pointer mb-4 block">
                         </label>
@@ -114,7 +114,7 @@ const Layout = ({ children }) => {
                     </div>
                 </div>
             </div>
-            <Footer className='z-0 mt-4' />
+            <Footer darkMode={darkMode} className='z-0 mt-4' />
         </div>
     )
 }

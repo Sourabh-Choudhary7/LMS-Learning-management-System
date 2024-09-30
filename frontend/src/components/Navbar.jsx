@@ -2,7 +2,9 @@ import React, { useEffect, useState } from 'react'
 import { GiHamburgerMenu } from "react-icons/gi";
 import { Link, useLocation } from 'react-router-dom';
 import { clearSearchQuery, setSearchQuery } from '../redux/Slices/CourseSlice';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import { MdOutlineDarkMode, MdOutlineLightMode } from 'react-icons/md';
+import { setMode } from '../redux/Slices/modeSlice';
 
 const Navbar = ({ isLoggedIn, userData, handleLogout }) => {
 
@@ -10,6 +12,11 @@ const Navbar = ({ isLoggedIn, userData, handleLogout }) => {
 
     const dispatch = useDispatch();
     const [localSearch, setLocalSearch] = useState('');
+
+    const { darkMode } = useSelector((state) => state?.mode)
+    const handleMode = () => {
+        dispatch(setMode(!darkMode));
+    }
 
     // we can also handle this from debouncing methods. Here, current implementation using setTimeout within useEffect
     useEffect(() => {
@@ -32,7 +39,7 @@ const Navbar = ({ isLoggedIn, userData, handleLogout }) => {
     // };
 
     return (
-        <div className="navbar bg-base-100 h-[10vh] w-full">
+        <div className={`navbar bg-base-100 h-[10vh] w-full ${darkMode ? "text-white" : "text-gray-900 bg-white"}`}>
             <div className="flex-none pl-2">
                 <label htmlFor="my-drawer" className="cursor-pointer">
                     <GiHamburgerMenu className="cursor-pointer text-2xl" />
@@ -42,20 +49,30 @@ const Navbar = ({ isLoggedIn, userData, handleLogout }) => {
                 <a className="btn btn-ghost text-xl">LMS</a>
             </div>
 
-            <div className="flex-none gap-2">
+            <div className="flex-none gap-4">
                 {location.pathname === '/courses' && (
                     <div className="form-control flex items-center">
-                    <input
-                        type="text"
-                        placeholder="Search a Course..."
-                        className="input input-bordered w-24 md:w-auto"
-                        value={localSearch}
-                        onChange={handleInputChange}
-                        aria-label="Search Courses"
-                    />
-                </div>
+                        <input
+                            type="text"
+                            placeholder="Search a Course..."
+                            className={`input input-bordered w-24 md:w-auto ${darkMode ? "" : "bg-white border-black"}`}
+                            value={localSearch}
+                            onChange={handleInputChange}
+                            aria-label="Search Courses"
+                        />
+                    </div>
 
                 )}
+                <div>
+                    <section className="text-l cursor-pointer"
+                        onClick={handleMode}>
+                        {darkMode ? (
+                            <MdOutlineDarkMode size={"20px"} />
+                        ) : (
+                            <MdOutlineLightMode size={"20px"} />
+                        )}
+                    </section>
+                </div>
                 {
                     isLoggedIn && (
                         <div className="dropdown dropdown-end">
@@ -68,7 +85,7 @@ const Navbar = ({ isLoggedIn, userData, handleLogout }) => {
                             </div>
                             <ul
                                 tabIndex={0}
-                                className="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-52 p-2 shadow">
+                                className={`menu menu-sm dropdown-content rounded-box z-[1] mt-3 w-52 p-2 shadow ${darkMode ? "text-white" : "text-black bg-white"}`}>
                                 <li>
                                     <Link to="/user/profile" className="justify-between">
                                         Profile
