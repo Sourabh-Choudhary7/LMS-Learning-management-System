@@ -7,6 +7,7 @@ import crypto from 'crypto';
 import requestIp from 'request-ip';
 import useragent from 'express-useragent';
 import { getGeoLocation } from "../utils/geoLocation.utils.js";
+import { logLoginActivity } from "../utils/loginActivity.utils.js";
 
 const cookieOptions = {
     maxAge: 7 * 24 * 60 * 60 * 1000,
@@ -146,20 +147,23 @@ const login = async (req, res, next) => {
         }
 
         // Generate JWT token
-        const token = user.generateJWTToken();
+        const token = await user.generateJWTToken();
         user.password = undefined;
-
-        // Log the login activity
-        const activity = {
-            userId: user._id,
-            ip: ip || 'Unknown IP',
-            location: location || { city: 'Unknown', country: 'Unknown' },
-            device: device || 'Unknown Device',
-            time: new Date().toISOString(),
-        };
-        loginActivity.push(activity);
         // Set the token in cookies
         res.cookie('token', token, cookieOptions);
+
+        // // Log the login activity
+        // const activity = {
+        //     userId: user._id,
+        //     ip: ip || 'Unknown IP',
+        //     location: location || { city: 'Unknown', country: 'Unknown' },
+        //     device: device || 'Unknown Device',
+        //     time: new Date().toISOString(),
+        // };
+        // loginActivity.push(activity);
+
+        const activity = logLoginActivity(user._id, ip, location, device);
+        loginActivity.push(activity);
 
         // Send response to the frontend
         res.status(200).json({
@@ -176,6 +180,10 @@ const login = async (req, res, next) => {
 
 
 const twoFactorAuthentication = async (req, res, next) => {
+    // Get the client IP address
+    const ip = requestIp.getClientIp(req);
+    const location = await getGeoLocation(ip);
+    const device = `${req.useragent.platform} - ${req.useragent.browser}`;
     try {
         const { email, otp } = req.body;
 
@@ -207,10 +215,14 @@ const twoFactorAuthentication = async (req, res, next) => {
         // Set JWT in the cookie and send response
         res.cookie('token', token, cookieOptions);
 
+        const activity = logLoginActivity(user._id, ip, location, device);
+        loginActivity.push(activity);
+
         res.status(200).json({
             success: true,
             message: 'Login successful',
             user,
+            loginActivity
         });
     } catch (error) {
         next(new AppError(error.message, 500));
@@ -235,7 +247,7 @@ const toggleTwoFactorAuth = async (req, res, next) => {
             await user.save();
             return res.json({
                 success: true,
-                message: 'Two-factor authentication disabled.',
+                message: 'Two-factor authentication disabled',
             });
         } else {
             // Enable 2FA
