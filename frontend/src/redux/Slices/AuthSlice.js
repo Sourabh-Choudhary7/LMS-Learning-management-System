@@ -211,6 +211,7 @@ const authSlice = createSlice({
     name: 'auth',
     initialState,
     reducers: {
+        // state manage for login Activity
         setLoginActivity: (state, action) =>{
             if (action.payload && action.payload.loginActivity) {
                 state.loginActivity = action.payload.loginActivity;
@@ -247,7 +248,8 @@ const authSlice = createSlice({
             
             // Handle Two-Factor Auth Verification
             .addCase(twoFactorAuth.fulfilled, (state, action) => {
-                const { user } = action?.payload;
+                console.log("login action 2fa: ", action);
+                const { user, loginActivity } = action?.payload;
 
                 // Once OTP is verified, store user data and set loggedIn to true
                 localStorage.setItem("data", JSON.stringify(user));
@@ -258,7 +260,8 @@ const authSlice = createSlice({
                 state.data = user;
                 state.role = user?.role;
                 state.tfaPending = false; // Reset tfaPending after successful OTP verification
-                state.loginActivity = action.payload.loginActivity;
+                state.loginActivity = loginActivity;
+                localStorage.setItem('loginActivity', JSON.stringify(loginActivity));
             })
             // for user logout
             .addCase(logout.fulfilled, (state) => {
