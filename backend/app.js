@@ -8,9 +8,12 @@ import paymentRoutes from './routes/payment.routes.js'
 import miscellaneousRoutes from './routes/miscellaneous.routes.js'
 import {config} from 'dotenv';
 import errorMiddleware from './middlewares/error.middleware.js';
+import userAgent from 'express-useragent';
 config();
 const app = express();
 
+// Add middleware to get user agent info
+app.use(userAgent.express());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -37,5 +40,7 @@ app.all('*', (req, res) => {
 })
 
 app.use(errorMiddleware);
+
+
 
 export default app;

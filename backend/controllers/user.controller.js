@@ -4,6 +4,9 @@ import cloudinary from 'cloudinary';
 import fs from 'fs/promises';
 import sendEmail from "../utils/sendEmail.js";
 import crypto from 'crypto';
+import requestIp from 'request-ip';
+import useragent from 'express-useragent';
+import { getGeoLocation } from "../utils/geoLocation.utils.js";
 
 const cookieOptions = {
     maxAge: 7 * 24 * 60 * 60 * 1000,
@@ -100,7 +103,12 @@ const register = async (req, res, next) => {
 
 }
 
+const loginActivity = []
 const login = async (req, res, next) => {
+    // Get the client IP address
+    const ip = requestIp.getClientIp(req);
+    const location = await getGeoLocation(ip);
+    const device = `${req.useragent.platform} - ${req.useragent.browser}`;
     try {
         const { email, password } = req.body;
 
@@ -108,24 +116,18 @@ const login = async (req, res, next) => {
             return next(new AppError('Email and Password are required', 400));
         }
 
+        // Find the user by email and include the password for comparison
         const user = await User.findOne({ email }).select('+password');
 
         if (!(user && (await user.comparePassword(password)))) {
-            return next(
-                new AppError('Email or Password do not match or user does not exist', 401)
-            );
+            return next(new AppError('Email or Password do not match or user does not exist', 401));
         }
 
-        console.log("user two factor:", user.twoFactorAuth);
-        // Check if 2FA is enabled for the user
-        if (user.twoFactorAuth === true) {
-            // Generate 4-digit OTP
+        // If Two-Factor Authentication (2FA) is enabled
+        if (user.twoFactorAuth) {
             const otp = user.enableTwoFactorAuth();
-
-            // Save user data with OTP
             await user.save();
 
-            // Send OTP to user's email
             const subject = 'Your OTP for 2FA';
             const message = `Your OTP for login is: ${otp}. It is valid for 10 minutes.`;
 
@@ -143,10 +145,20 @@ const login = async (req, res, next) => {
             }
         }
 
-        const token = await user.generateJWTToken();
-
+        // Generate JWT token
+        const token = user.generateJWTToken();
         user.password = undefined;
 
+        // Log the login activity
+        const activity = {
+            userId: user._id,
+            ip: ip || 'Unknown IP',
+            location: location || { city: 'Unknown', country: 'Unknown' },
+            device: device || 'Unknown Device',
+            time: new Date().toISOString(),
+        };
+        loginActivity.push(activity);
+        // Set the token in cookies
         res.cookie('token', token, cookieOptions);
 
         // Send response to the frontend
@@ -154,7 +166,9 @@ const login = async (req, res, next) => {
             success: true,
             message: 'User logged in successfully',
             user,
+            loginActivity // You can return the activity or save it to DB
         });
+
     } catch (error) {
         next(new AppError(error.message, 500));
     }
