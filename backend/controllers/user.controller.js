@@ -15,7 +15,6 @@ const cookieOptions = {
     secure: true
 }
 
-
 const register = async (req, res, next) => {
 
     try {
@@ -178,7 +177,6 @@ const login = async (req, res, next) => {
     }
 };
 
-
 const twoFactorAuthentication = async (req, res, next) => {
     // Get the client IP address
     const ip = requestIp.getClientIp(req);
@@ -264,7 +262,6 @@ const toggleTwoFactorAuth = async (req, res, next) => {
         next(new AppError(error.message, 500));
     }
 }
-
 
 const logout = (req, res) => {
     try {
@@ -486,7 +483,8 @@ const updateUser = async (req, res,) => {
 
 }
 
-const getAllUsers = async (req, res, next) => {
+// Admin Can do CRUD operations on User
+const getAllUsersByAdmin = async (req, res, next) => {
     try {
         const users = await User.find();
         if (!users) {
@@ -502,6 +500,82 @@ const getAllUsers = async (req, res, next) => {
     }
 };
 
+const updateUserByAdmin = async (req, res, next) => {
+    try {
+        const { userId } = req.params;
+        const { fullName } = req.body;
+        console.log(userId)
+
+        const user = await User.findById(userId);
+
+        if (!user) {
+            return next(new AppError('Invalid user id or user does not exist'));
+        }
+
+        if (fullName) {
+            user.fullName = fullName;
+        }
+
+        // Run only if user sends a file
+        if (req.file) {
+            // Deletes the old image uploaded by the user
+            await cloudinary.v2.uploader.destroy(user.avatar.public_id);
+
+            try {
+                const result = await cloudinary.v2.uploader.upload(req.file.path, {
+                    folder: 'lms', // Save files in a folder named lms
+                    width: 250,
+                    height: 250,
+                    gravity: 'faces', // This option tells cloudinary to center the image around detected faces (if any) after cropping or resizing the original image
+                    crop: 'fill',
+                });
+
+                // If success
+                if (result) {
+                    // Set the public_id and secure_url in DB
+                    user.avatar.public_id = result.public_id;
+                    user.avatar.secure_url = result.secure_url;
+
+                    // After successful upload remove the file from local storage
+                    fs.rm(`uploads/${req.file.filename}`);
+                }
+            } catch (error) {
+                return next(
+                    new AppError(error || 'File not uploaded, please try again', 400)
+                );
+            }
+        }
+
+        // Save the user object
+        await user.save();
+
+        res.status(200).json({
+            success: true,
+            message: 'User details updated successfully',
+            user
+        });
+
+    } catch (error) {
+        return next(new AppError(error.message, 500));
+    }
+}
+
+const deleteUserByAdmin = async (req, res, next) => {
+    try {
+        const {userId} = req.params;
+        const user = await User.findByIdAndDelete(userId);
+        if (!user) {
+            return next(new AppError('Invalid user id or user does not exist'));
+        }
+        res.status(200).json({
+            success: true,
+            message: 'User deleted successfully'
+        });
+    } catch (error) {
+        return next(new AppError(error.message, 500));
+    }
+}
+
 
 export {
     register,
@@ -514,5 +588,7 @@ export {
     resetPassword,
     changePassword,
     updateUser,
-    getAllUsers
+    getAllUsersByAdmin,
+    updateUserByAdmin,
+    deleteUserByAdmin
 };
