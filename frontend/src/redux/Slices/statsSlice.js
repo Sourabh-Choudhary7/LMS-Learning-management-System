@@ -29,7 +29,7 @@ export const getStatsData = createAsyncThunk("getstat", async () => {
 
 export const getAllUsers = createAsyncThunk("getAllUsers", async () => {
     try {
-        const res = axiosInstance.get("/users");
+        const res = axiosInstance.get("/admin/all-users");
         toast.promise(res, {
             loading: "Fetching all users list...",
             success: (data) => {
