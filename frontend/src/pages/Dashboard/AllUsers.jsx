@@ -3,12 +3,20 @@ import Layout from '../../layout/Layout';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { getAllUsers } from '../../redux/Slices/statsSlice';
+import { BsCollectionPlayFill, BsTrash } from 'react-icons/bs';
+import { LiaUserEditSolid } from 'react-icons/lia';
+import { deleteUserByAdmin } from '../../redux/Slices/AuthSlice';
 
 const AllUsers = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [selectedImage, setSelectedImage] = useState(null); // State to hold selected image URL
+    const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+    const [selectedUser, setSelectedUser] = useState({
+        id: "",
+        avatar: null,
+        fullName: "",
+    }); // State to hold selected user
     const usersList = useSelector((state) => state?.stats?.allUsers);
 
     useEffect(() => {
@@ -16,11 +24,38 @@ const AllUsers = () => {
     }, [dispatch]);
 
     // Function to toggle the modal and set the selected image
-    const toggleModal = (imageUrl) => {
-        setSelectedImage(imageUrl);
-        setIsModalOpen(!isModalOpen);
+    // Function to toggle the modal for either image or confirmation based on the argument passed
+    const toggleModal = (arg) => {
+        if (typeof arg === 'string' && arg.includes('http')) {
+            // If the argument is a URL (for enlarging image)
+            setSelectedUser({
+                ...selectedUser,
+                avatar: arg,
+            });
+            setIsModalOpen(!isModalOpen);
+        } else if (typeof arg === 'string') {
+            // If the argument is a userId (for confirmation modal)
+            setSelectedUser({
+                id: arg,
+                avatar: null,
+                fullName: "",
+            });
+            setIsConfirmModalOpen(!isConfirmModalOpen);
+        }
     };
 
+
+    const handleUpdateUser = (userId) => {
+        // console.log(`Update user: ${userId}`)
+        
+    }
+    const handleUserDelete = async (userId) => {
+        // console.log(`Delete user: ${userId}`)
+        const response = await dispatch(deleteUserByAdmin(userId));
+        if (response?.payload?.success)
+            await dispatch(getAllUsers());
+        setIsConfirmModalOpen(false);
+    }
     return (
         <Layout>
             <div className="min-h-[80vh]  flex flex-col flex-wrap gap-10 text-white">
@@ -38,6 +73,7 @@ const AllUsers = () => {
                                     <th>Email</th>
                                     <th>Role</th>
                                     <th>Subscription</th>
+                                    <th>Action</th>
                                 </tr>
                             </thead>
 
@@ -62,6 +98,22 @@ const AllUsers = () => {
                                                     {element?.subscription?.status}
                                                 </span>
                                             </td>
+                                            <td className="flex items-center gap-4">
+                                                {/* to Update the Users */}
+                                                <button
+                                                    onClick={() => handleUpdateUser(element?._id)}
+                                                    className="bg-green-500 hover:bg-green-600 transition-all ease-in-out duration-30 text-xl py-2 px-4 rounded-md font-bold max-md:px-2 max-md:py-1 max-md:texl-sm"
+                                                >
+                                                    <LiaUserEditSolid />
+                                                </button>
+                                                {/* to delete the Users */}
+                                                <button
+                                                    onClick={() => toggleModal(element?._id)}
+                                                    className="bg-red-500 hover:bg-red-600 transition-all ease-in-out duration-30 text-xl py-2 px-4 rounded-md font-bold max-md:px-2 max-md:py-1 max-md:texl-sm"
+                                                >
+                                                    <BsTrash />
+                                                </button>
+                                            </td>
                                         </tr>
                                     );
                                 })}
@@ -70,22 +122,60 @@ const AllUsers = () => {
                     </div>
                     {/* Modal to show the enlarged image */}
                     {isModalOpen && (
-                        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={() => toggleModal(null)}>
+                        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={() => setIsModalOpen(!isModalOpen)}>
                             <div className="relative">
                                 <button
                                     className="absolute top-2 right-2 text-white text-2xl"
-                                    onClick={() => toggleModal(null)}
+                                    onClick={() => setIsModalOpen(!isModalOpen)}
                                 >
                                     &times;
                                 </button>
                                 <img
                                     className="w-[70vw] h-[70vh] object-contain"
-                                    src={selectedImage}
+                                    src={selectedUser.avatar}
                                     alt="Enlarged Profile"
                                 />
                             </div>
                         </div>
                     )}
+
+                    {/* Confirmation Modal */}
+                    {
+                        isConfirmModalOpen && (
+                            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                                <div className="w-full max-w-md p-6 bg-gray-900 rounded-md shadow-md">
+                                    <div className="flex items-center justify-between">
+                                        <h3 className="text-xl font-bold">Delete User</h3>
+                                        <button
+                                            className="text-xl font-bold text-red-500 hover:text-red-600 transition-all ease-in-out duration-30"
+                                            onClick={() => setIsConfirmModalOpen(!isConfirmModalOpen)}
+                                        >
+                                            &times;
+                                        </button>
+                                    </div>
+                                    <p className="mt-4 text-gray-300 ">
+                                        Are you sure you want to delete this user?
+                                    </p>
+                                    <div className="flex items-center mt-4 w-full gap-4">
+                                        <button
+                                            className="w-1/2 btn btn-error btn-sm transition-all ease-in-out duration-30"
+                                            onClick={() => handleUserDelete(selectedUser.id)}
+                                        >
+                                            Delete
+                                        </button>
+                                        <button
+                                            className=" w-1/2 btn btn-accent btn-sm rounded-md transition-all ease-in-out duration-30"
+                                            onClick={() => toggleModal(selectedUser.id)}
+                                        >
+                                            Cancel
+                                        </button>
+
+                                    </div>
+                                </div>
+                            </div>
+                        )
+
+                    }
                 </div>
             </div>
         </Layout>
