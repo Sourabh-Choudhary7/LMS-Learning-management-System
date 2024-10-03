@@ -207,6 +207,53 @@ export const resetPassword = createAsyncThunk("/auth/change/password", async ({ 
     }
 });
 
+// Admin can do CRUD operations on users
+
+// function to handle update user by Admin
+export const updateUserProfileByAdmin = createAsyncThunk("/auth/admin/update-user-profile", async (data) => {
+    const formData = new FormData();
+    formData.append("fullName", data[1].fullName);
+    formData.append("avatar", data[1].avatar);
+    try {
+        let res = axiosInstance.put(`/admin/update/${data[0]}`, formData);
+        toast.promise(res, {
+            loading: "Wait! updating user profile...",
+            success: (data) => {
+                return data?.data?.message;
+            },
+            error: "Failed to update user profile",
+        });
+
+        // getting response resolved here
+        res = await res;
+        return res.data;
+    } catch (error) {
+        toast.error(error?.response?.data?.message);
+    }
+});
+
+// function to handle delete user by Admin
+export const deleteUserByAdmin = createAsyncThunk("/auth/admin/delete-user", async (userId) => {
+    try {
+        let res = axiosInstance.delete(`/admin/delete/${userId}`);
+
+        toast.promise(res, {
+            loading: "Wait! deleting user...",
+            success: (data) => {
+                return data?.data?.message;
+            },
+            error: "Failed to delete user",
+        });
+
+        // getting response resolved here
+        res = await res;
+        return res.data;
+    } catch (error) {
+        toast.error(error?.response?.data?.message);
+    }
+});
+
+
 const authSlice = createSlice({
     name: 'auth',
     initialState,
