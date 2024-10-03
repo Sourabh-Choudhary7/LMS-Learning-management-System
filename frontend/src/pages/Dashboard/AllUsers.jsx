@@ -3,19 +3,26 @@ import Layout from '../../layout/Layout';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { getAllUsers } from '../../redux/Slices/statsSlice';
-import { BsCollectionPlayFill, BsTrash } from 'react-icons/bs';
+import { BsCollectionPlayFill, BsPersonCircle, BsTrash } from 'react-icons/bs';
 import { LiaUserEditSolid } from 'react-icons/lia';
-import { deleteUserByAdmin } from '../../redux/Slices/AuthSlice';
+import { deleteUserByAdmin, updateUserProfileByAdmin } from '../../redux/Slices/AuthSlice';
+import { TiTick } from 'react-icons/ti';
+import { ImCross } from 'react-icons/im';
+import { FaCamera } from 'react-icons/fa';
+import toast from 'react-hot-toast';
 
 const AllUsers = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+    const [isEditable, setIsEditable] = useState(false);
     const [selectedUser, setSelectedUser] = useState({
         id: "",
         avatar: null,
         fullName: "",
+        previewImage: "",
+        user: []
     }); // State to hold selected user
     const usersList = useSelector((state) => state?.stats?.allUsers);
 
@@ -23,7 +30,6 @@ const AllUsers = () => {
         dispatch(getAllUsers());
     }, [dispatch]);
 
-    // Function to toggle the modal and set the selected image
     // Function to toggle the modal for either image or confirmation based on the argument passed
     const toggleModal = (arg) => {
         if (typeof arg === 'string' && arg.includes('http')) {
@@ -44,13 +50,63 @@ const AllUsers = () => {
         }
     };
 
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setSelectedUser({
+            ...selectedUser,
+            [name]: value,
+        });
+    }
+    const getImage = (e) => {
+        e.preventDefault();
+        const uploadedImage = e.target.files[0];
+        if (uploadedImage) {
+            const fileReader = new FileReader();
+            fileReader.readAsDataURL(uploadedImage);
+            fileReader.addEventListener("load", function () {
+                setSelectedUser({
+                    ...selectedUser,
+                    avatar: uploadedImage,
+                    previewImage: this.result
+                });
+            });
+        }
+    };
 
-    const handleUpdateUser = (userId) => {
-        // console.log(`Update user: ${userId}`)
-        
+    const toggleEditMode = (user) => {
+        if (user.role === 'ADMIN') {
+            toast.error("You are not allowed to update this user as this role is admin");
+            return;
+        }
+
+        setSelectedUser({
+            ...selectedUser,
+            user: user,
+            id: user._id,
+            fullName: user.fullName,
+            previewImage: user.avatar?.secure_url,
+        });
+        setIsEditable(!isEditable);
+    }
+
+    const handleUpdateUser = async (userId) => {
+        if (selectedUser.fullName.length < 5) {
+            toast.error("Full Name must be at least 5 characters");
+            return;
+        }
+
+        const payload = {
+            fullName: selectedUser.fullName,
+            avatar: selectedUser.avatar,
+        }
+
+        const res = await dispatch(updateUserProfileByAdmin([selectedUser.id, payload]));
+        if (res?.payload?.success)
+            await dispatch(getAllUsers());
+        setIsEditable(false);
+
     }
     const handleUserDelete = async (userId) => {
-        // console.log(`Delete user: ${userId}`)
         const response = await dispatch(deleteUserByAdmin(userId));
         if (response?.payload?.success)
             await dispatch(getAllUsers());
@@ -83,14 +139,68 @@ const AllUsers = () => {
                                         <tr key={element?._id}>
                                             <td>{index + 1}</td>
                                             <td>
-                                                <div className="w-10 rounded-full cursor-pointer" onClick={() => toggleModal(element?.avatar?.secure_url)}>
-                                                    <img
-                                                        alt="User avatar"
-                                                        src={element?.avatar?.secure_url}
-                                                    />
-                                                </div>
+                                                {
+                                                    isEditable && (selectedUser?.id === element._id) ?
+                                                        (
+                                                            <div>
+                                                                <figure>
+                                                                    <label htmlFor="image_uploads" className="cursor-pointer flex relative">
+                                                                        {selectedUser.previewImage ? (
+                                                                            <img
+                                                                                className="w-10 object-cover rounded-full border-2 border-white"
+                                                                                src={selectedUser.previewImage}
+                                                                                alt="Profile"
+                                                                            />
+                                                                        ) : (
+                                                                            <BsPersonCircle className="w-10 object-cover rounded-full border-2 border-white" />
+                                                                        )}
+
+                                                                        {/* Camera Icon Overlay */}
+                                                                        <div className="absolute bg-gray-800 p-1 rounded-full text-white top-6 left-8">
+                                                                            <FaCamera />
+                                                                        </div>
+                                                                    </label>
+                                                                    <input
+                                                                        onChange={getImage}
+                                                                        className="hidden"
+                                                                        type="file"
+                                                                        name="image_uploads"
+                                                                        id="image_uploads"
+                                                                        accept=".jpg, .jpeg, .png, .svg"
+                                                                    />
+                                                                </figure>
+                                                            </div>
+                                                        )
+                                                        :
+                                                        (
+                                                            <div className="w-10 rounded-full cursor-pointer" onClick={() => toggleModal(element?.avatar?.secure_url)}>
+                                                                <img
+                                                                    alt="User avatar"
+                                                                    src={element?.avatar?.secure_url}
+                                                                />
+                                                            </div>
+                                                        )
+                                                }
+
                                             </td>
-                                            <td>{element?.fullName}</td>
+                                            <td>
+                                                {
+                                                    isEditable && (selectedUser?.id === element._id) ? (
+                                                        <input
+                                                            type="text"
+                                                            name="fullName"
+                                                            id="fullName"
+                                                            value={selectedUser.fullName}
+                                                            onChange={handleInputChange}
+                                                            className="input input-bordered w-full max-w-xs"
+                                                        />
+                                                    ) : (
+                                                        element?.fullName?.split(' ')
+                                                            .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+                                                            .join(' ')
+                                                    )
+                                                }
+                                            </td>
                                             <td>{element?.email}</td>
                                             <td>{element?.role}</td>
                                             <td>
@@ -98,22 +208,55 @@ const AllUsers = () => {
                                                     {element?.subscription?.status}
                                                 </span>
                                             </td>
-                                            <td className="flex items-center gap-4">
-                                                {/* to Update the Users */}
-                                                <button
-                                                    onClick={() => handleUpdateUser(element?._id)}
-                                                    className="bg-green-500 hover:bg-green-600 transition-all ease-in-out duration-30 text-xl py-2 px-4 rounded-md font-bold max-md:px-2 max-md:py-1 max-md:texl-sm"
-                                                >
-                                                    <LiaUserEditSolid />
-                                                </button>
-                                                {/* to delete the Users */}
-                                                <button
-                                                    onClick={() => toggleModal(element?._id)}
-                                                    className="bg-red-500 hover:bg-red-600 transition-all ease-in-out duration-30 text-xl py-2 px-4 rounded-md font-bold max-md:px-2 max-md:py-1 max-md:texl-sm"
-                                                >
-                                                    <BsTrash />
-                                                </button>
-                                            </td>
+                                            {
+                                                element?.role !== 'ADMIN' ?
+                                                    <td className="flex items-center gap-4">
+                                                        {
+                                                            isEditable && (selectedUser?.id === element._id) ?
+                                                                (
+                                                                    <>
+                                                                        {/* Tick button to confirm the update */}
+                                                                        <button
+                                                                            onClick={() => handleUpdateUser(element?._id)}
+                                                                            className="bg-green-500 hover:bg-green-600 transition-all ease-in-out duration-30 text-xl py-2 px-4 rounded-md font-bold max-md:px-2 max-md:py-1 max-md:text-sm"
+                                                                        >
+                                                                            <TiTick />
+                                                                        </button>
+                                                                        {/* Cancel button to discard changes */}
+                                                                        <button
+                                                                            onClick={() => setIsEditable(!isEditable)} // Passing null to reset the editable state
+                                                                            className="bg-red-500 hover:bg-red-600 transition-all ease-in-out duration-30 text-xl py-2 px-4 rounded-md font-bold max-md:px-2 max-md:py-1 max-md:text-sm"
+                                                                        >
+                                                                            <ImCross />
+                                                                        </button>
+                                                                    </>
+                                                                ) :
+                                                                (
+                                                                    <>
+                                                                        {/* Edit button */}
+                                                                        <button
+                                                                            onClick={() => toggleEditMode(element)}
+                                                                            className="bg-green-500 hover:bg-green-600 transition-all ease-in-out duration-30 text-xl py-2 px-4 rounded-md font-bold max-md:px-2 max-md:py-1 max-md:text-sm"
+                                                                        >
+                                                                            <LiaUserEditSolid />
+                                                                        </button>
+                                                                        {/* Delete button */}
+                                                                        <button
+                                                                            onClick={() => toggleModal(element?._id)}
+                                                                            className="bg-red-500 hover:bg-red-600 transition-all ease-in-out duration-30 text-xl py-2 px-4 rounded-md font-bold max-md:px-2 max-md:py-1 max-md:text-sm"
+                                                                        >
+                                                                            <BsTrash />
+                                                                        </button>
+                                                                    </>
+                                                                )
+                                                        }
+                                                    </td>
+                                                    :
+                                                    <td td className="flex items-center gap-4">
+                                                        Can't do any action
+                                                    </td>
+                                            }
+
                                         </tr>
                                     );
                                 })}
@@ -178,7 +321,7 @@ const AllUsers = () => {
                     }
                 </div>
             </div>
-        </Layout>
+        </Layout >
     );
 };
 
