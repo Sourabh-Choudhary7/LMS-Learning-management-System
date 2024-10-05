@@ -119,6 +119,10 @@ const login = async (req, res, next) => {
         // Find the user by email and include the password for comparison
         const user = await User.findOne({ email }).select('+password');
 
+        if(!user) {
+            return next(new AppError('Invalid user id or user does not exist', 400));
+        }
+
         // Check if the user's account is active
         if (!user.account_active) {
             return next(new AppError('Your Account is deactivated. Please contact support.', 403)); // 403 Forbidden
