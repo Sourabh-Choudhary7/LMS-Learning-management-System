@@ -96,7 +96,7 @@ const DisplayLecture = () => {
                     role === "ADMIN" ? (
                         <button
                             onClick={() => navigate("/course/addlecture", { state: { ...state } })}
-                            className="text-l rounded-md font-bold w-full transition-all ease-in-out duration-300 btn btn-md btn-primary btn-outline"
+                            className="text-l rounded-md font-bold transition-all ease-in-out duration-300 btn btn-md btn-primary btn-outline"
                         >
                             Add New Lecture
                         </button>

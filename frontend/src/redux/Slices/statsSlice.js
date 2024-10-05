@@ -4,6 +4,8 @@ import toast from 'react-hot-toast';
 
 const initialState = {
     allUsersCount: 0,
+    activeUsersCount: 0,
+    inActiveUsersCount: 0,
     subscribedUsersCount: 0,
     allUsers: []
 };
@@ -75,6 +77,8 @@ const statsSlice = createSlice({
         builder
             .addCase(getStatsData.fulfilled, (state, action) => {
                 state.allUsersCount = action?.payload?.allUsersCount;
+                state.activeUsersCount = action?.payload?.activeUsersCount;
+                state.inActiveUsersCount = action?.payload?.inActiveUsersCount;
                 state.subscribedUsersCount = action?.payload?.subscribedUsersCount;
             })
             .addCase(getAllUsers.fulfilled, (state, action) => {

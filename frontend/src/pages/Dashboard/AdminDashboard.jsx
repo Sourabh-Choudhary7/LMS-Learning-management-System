@@ -10,12 +10,11 @@ import {
   BarElement,
   Title,
 } from "chart.js";
-import { Pie, Bar, Doughnut } from "react-chartjs-2";
+import { Bar, Doughnut } from "react-chartjs-2";
 import { FaUsers } from "react-icons/fa";
 import { GiMoneyStack } from "react-icons/gi";
 import { FcSalesPerformance } from "react-icons/fc";
 import { BsCollectionPlayFill, BsTrash } from "react-icons/bs";
-import { MdOutlineModeEdit } from "react-icons/md";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { getAllCourses, removeCourse } from "../../redux/Slices/CourseSlice";
@@ -36,7 +35,7 @@ const AdminDashboard = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const { allUsersCount, subscribedUsersCount } = useSelector(
+  const { allUsersCount, activeUsersCount, inActiveUsersCount, subscribedUsersCount } = useSelector(
     (state) => state.stats
   );
   const { allPayments, finalMonths, monthlySalesRecord } = useSelector(
@@ -50,13 +49,13 @@ const AdminDashboard = () => {
   }, 0) / 100;
 
   const userData = {
-    labels: ["Registered User", "Enrolled User"],
+    labels: ["Registered User", "Active User", "Inactive User", "Enrolled User"],
     datasets: [
       {
         label: "User Details",
-        data: [allUsersCount, subscribedUsersCount],
-        backgroundColor: ["yellow", "green"],
-        borderColor: ["yellow", "green"],
+        data: [allUsersCount, activeUsersCount, inActiveUsersCount, subscribedUsersCount],
+        backgroundColor: ["blue", "yellow", "red", "green"],
+        borderColor: ["blue", "yellow", "red", "green"],
         borderWidth: 1,
       },
     ],

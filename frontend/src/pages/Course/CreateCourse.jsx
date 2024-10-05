@@ -93,9 +93,9 @@ const CreateCourse = () => {
           className="bg-gray-900 flex flex-col justify-center gap-5 rounded-lg p-4 text-white w-[700px] my-10 shadow-[0_0_10px_black] relative"
         >
 
-          <Link to={navigate(-1)} className="absolute top-8 text-2xl link text-accent cursor-pointer">
+          <div onClick={()=> navigate(-1)} className="absolute top-8 text-2xl link text-accent cursor-pointer">
             <AiOutlineArrowLeft />
-          </Link>
+          </div>
 
           <h1 className="text-center text-2xl font-bold">
             Create New Course
