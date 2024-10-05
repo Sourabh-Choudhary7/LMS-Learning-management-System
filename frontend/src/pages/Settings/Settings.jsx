@@ -28,8 +28,7 @@ const Settings = () => {
   // Toggle 2FA
   const handleToggle2FA = async () => {
     setIsLoading(true);
-    const payload = { userId: userData?._id };
-    const res = await dispatch(toggleTwoFactorAuth(payload));
+    const res = await dispatch(toggleTwoFactorAuth());
     if (res?.payload?.success) await dispatch(getUserData());
     setIsLoading(false);
   };

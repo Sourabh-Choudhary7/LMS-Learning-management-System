@@ -72,9 +72,9 @@ export const twoFactorAuth = createAsyncThunk("/auth/login/twoStepAuth", async (
     }
 });
 
-export const toggleTwoFactorAuth = createAsyncThunk("/auth/user/toggleTwoFactor", async (userId) => {
+export const toggleTwoFactorAuth = createAsyncThunk("/auth/user/toggleTwoFactor", async () => {
     try {
-        let res = axiosInstance.post("users/toggle-2fa", userId);
+        let res = axiosInstance.put("users/toggle-2fa");
 
         toast.promise(res, {
             loading: "Setting Two Factor Authentication...",
