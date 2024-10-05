@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import Layout from '../../layout/Layout';
 import { useDispatch, useSelector } from 'react-redux';
-import { getUserData, toggleTwoFactorAuth } from '../../redux/Slices/AuthSlice';
+import { deactivateUserAccount, deleteUserAccount, getUserData, logout, toggleTwoFactorAuth } from '../../redux/Slices/AuthSlice';
 import { MdOutlineDarkMode, MdOutlineLightMode, MdLock, MdSecurity, MdHelp, MdExpandMore, MdExpandLess, MdManageAccounts } from 'react-icons/md';
 import { FaSignInAlt } from 'react-icons/fa';
 import { setMode } from '../../redux/Slices/modeSlice';
@@ -16,6 +16,7 @@ const Settings = () => {
   const tfa = userData?.twoFactorAuth;
   const { darkMode } = useSelector((state) => state?.mode);
   const [isLoading, setIsLoading] = useState(false);
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
 
   // Accordion state
   const [openSection, setOpenSection] = useState(null);
@@ -35,28 +36,24 @@ const Settings = () => {
 
   //account deletion
   const handleAccountDeletion = async () => {
-    console.log('account deletion');
-    // setIsLoading(true);
-    // const payload = { userId: userData?._id };
-    // const res = await dispatch(deleteUser(payload));
-    // if (res?.payload?.success) {
-    //   await dispatch(logoutUser());
-    //   navigate('/login');
-    // }
-    // setIsLoading(false);
+    setIsLoading(true);
+    let res = await dispatch(deleteUserAccount());
+    if (res?.payload?.success) {
+      await dispatch(logout());
+      navigate('/login');
+    }
+    setIsLoading(false);
   };
 
   // Deactivating the user's account 
   const handleAccountDeactivate = async () => {
-    console.log('account deactivation');
-    // setIsLoading(true);
-    // const payload = { userId: userData?._id };
-    // const res = await dispatch(deactivateUser(payload));
-    // if (res?.payload?.success) {
-    //   await dispatch(logoutUser());
-    //   navigate('/login');
-    // }
-    // setIsLoading(false);
+    setIsLoading(true);
+    let res = await dispatch(deactivateUserAccount());
+    if (res?.payload?.success) {
+      await dispatch(logout());
+      navigate('/login');
+    }
+    setIsLoading(false);
   };
 
   // Toggle accordion sections
@@ -198,16 +195,17 @@ const Settings = () => {
                   <div className="ml-8 mt-2 flex gap-4">
                     <button
                       className="btn btn-error btn-outline btn-sm cursor-pointer"
-                      onClick={handleAccountDeletion}
+                      onClick={() => setIsConfirmModalOpen(!isConfirmModalOpen)}
                     >
-                      {'Delete Account'}
+                      Delete Account
                     </button>
 
                     <button
-                      className="btn btn-secondary btn-outline btn-sm cursor-pointer"
+                      className={`btn btn-secondary btn-outline btn-sm ${isLoading ? 'cursor-wait' : 'cursor-pointer'}`}
+                      disabled={isLoading}
                       onClick={handleAccountDeactivate}
                     >
-                      {'Deactivate Account'}
+                      {isLoading ? 'Deactivating Account...' : 'Deactivate Account'}
                     </button>
 
                   </div>
@@ -236,7 +234,44 @@ const Settings = () => {
             </div>
           )}
         </div>
+        {/* Confirmation Modal */}
+        {
+          isConfirmModalOpen && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <div className="w-full max-w-md p-6 bg-gray-900 rounded-md shadow-md">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xl font-bold">Delete User</h3>
+                  <button
+                    className="text-xl font-bold text-red-500 hover:text-red-600 transition-all ease-in-out duration-30"
+                    onClick={() => setIsConfirmModalOpen(!isConfirmModalOpen)}
+                  >
+                    &times;
+                  </button>
+                </div>
+                <p className="mt-4 text-gray-300 ">
+                  Are you sure you want to Permanent delete this account?
+                </p>
+                <div className="flex items-center mt-4 w-full gap-4">
+                  <button
+                    className={`w-1/2 btn btn-error btn-sm transition-all ease-in-out duration-30 ${isLoading ? 'cursor-wait' : 'cursor-pointer'}`}
+                    disabled={isLoading}
+                    onClick={handleAccountDeletion}
+                  >
+                    {isLoading ? "Deleting Account" : "Delete Account"}
+                  </button>
+                  <button
+                    className=" w-1/2 btn btn-accent btn-sm rounded-md transition-all ease-in-out duration-30"
+                    onClick={() => setIsConfirmModalOpen(!isConfirmModalOpen)}
+                  >
+                    Cancel
+                  </button>
 
+                </div>
+              </div>
+            </div>
+          )
+
+        }
 
       </div>
     </Layout>

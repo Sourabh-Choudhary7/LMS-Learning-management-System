@@ -210,7 +210,7 @@ export const resetPassword = createAsyncThunk("/auth/change/password", async ({ 
 // User can deactivate their account
 export const deactivateUserAccount = createAsyncThunk("/user/deactivate-account", async () => {
     try {
-        const res = await axiosInstance.put("/users/account/deactivate");
+        let res = axiosInstance.put("/users/account/deactivate");
         toast.promise(res, {
             loading: "Wait! Deactivating account...",
             success: (data) => {
@@ -230,7 +230,7 @@ export const deactivateUserAccount = createAsyncThunk("/user/deactivate-account"
 // User can permanantly delete their account
 export const deleteUserAccount = createAsyncThunk("/user/delete-account", async () => {
     try {
-        const res = await axiosInstance.delete("/users/account/delete");
+        let res = axiosInstance.delete("/users/account/delete");
         toast.promise(res, {
             loading: "Wait! Permanently Deleting user account...",
             success: (data) => {
