@@ -119,6 +119,11 @@ const login = async (req, res, next) => {
         // Find the user by email and include the password for comparison
         const user = await User.findOne({ email }).select('+password');
 
+        // Check if the user's account is active
+        if (!user.account_active) {
+            return next(new AppError('Your Account is deactivated. Please contact support.', 403)); // 403 Forbidden
+        }
+
         if (!(user && (await user.comparePassword(password)))) {
             return next(new AppError('Email or Password do not match or user does not exist', 401));
         }
@@ -228,9 +233,9 @@ const twoFactorAuthentication = async (req, res, next) => {
 };
 
 const toggleTwoFactorAuth = async (req, res, next) => {
-    const { userId } = req.body;
-
+    
     try {
+        const userId = req.user.id;
         const user = await User.findById(userId);
 
         if (!user) {
@@ -585,6 +590,44 @@ const deleteUserByAdmin = async (req, res, next) => {
     }
 }
 
+const deleteAccount = async (req, res, next) => {
+    try {
+        const userId = req.user.id;
+        const user = await User.findById(userId);
+        if (!user) {
+            return next(new AppError('User not found', 404));
+        }
+        await User.findByIdAndDelete(userId);
+        res.status(200).json({
+            success: true,
+            message: 'User account deleted successfully',
+        });
+    } catch (error) {
+        return next(new AppError(error.message, 500));
+    }
+}
+
+const deactivateAccount = async (req, res, next) => {
+    try {
+        const userId = req.user.id;
+        const user = await User.findById(userId);
+        if (!user) {
+            return next(new AppError('User not found', 404));
+        }
+
+        user.account_active = false;
+        await User.findByIdAndUpdate(userId, { active: false }, { new: true });
+        user.save();
+        res.status(200).json({
+            success: true,
+            message: 'User deactivated successfully',
+            user
+        });
+    } catch (error) {
+        return next(new AppError(error.message, 500));
+    }
+}
+
 
 export {
     register,
@@ -599,5 +642,7 @@ export {
     updateUser,
     getAllUsersByAdmin,
     updateUserByAdmin,
-    deleteUserByAdmin
+    deleteUserByAdmin,
+    deleteAccount,
+    deactivateAccount
 };

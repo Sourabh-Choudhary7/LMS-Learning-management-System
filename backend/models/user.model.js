@@ -5,6 +5,10 @@ import jwt from 'jsonwebtoken';
 
 const userSchema = new Schema(
   {
+    account_active: {
+      type: Boolean,
+      default: true
+    },
     fullName: {
       type: String,
       required: [true, 'Name is required'],
