@@ -10,6 +10,7 @@ import { TiTick } from 'react-icons/ti';
 import { ImCross } from 'react-icons/im';
 import { FaCamera } from 'react-icons/fa';
 import toast from 'react-hot-toast';
+import { IoMdArrowDropdown } from 'react-icons/io';
 
 const AllUsers = () => {
     const dispatch = useDispatch();
@@ -119,6 +120,27 @@ const AllUsers = () => {
                     All Users List
                 </h1>
                 <div className="mx-[10%] w-[80%] self-center flex flex-col items-center justify-center gap-10 mb-10">
+                    <div className="w-full flex gap-4 max-md:flex-col">
+                        <div className='w-1/3 max-md:w-full'>
+                            <input type="text" placeholder='Search user by name...' className='input input-bordered border-white px-2 py-2 bg-transparent w-full' />
+                        </div>
+                        <div className="relative w-1/3 max-md:w-full">
+                            <select name="users" id="users" className="appearance-none input input-bordered border-white px-2 py-2 bg-transparent w-full cursor-pointer">
+                                <option value="all-user" className='bg-gray-900'>All User</option>
+                                <option value="active-user" className='bg-gray-900'>Active User</option>
+                                <option value="enrolled-user" className='bg-gray-900'>Enrolled User</option>
+                                <option value="inactive-user" className='bg-gray-900'>Inactive User</option>
+                            </select>
+                            <span className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                                <IoMdArrowDropdown />
+                            </span>
+                        </div>
+                        <div className='w-1/3 flex gap-4 max-md:w-full'>
+                            <button className='btn btn-secondary btn-outline w-1/2'>Clear Filter</button>
+                            <button className='btn btn-primary btn-outline w-1/2'>Export</button>
+                        </div>
+                    </div>
+
                     <div className="overflow-x-auto w-full">
                         <table className="table w-full">
                             <thead className='text-l font-bold'>
