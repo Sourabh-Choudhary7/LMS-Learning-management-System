@@ -207,7 +207,44 @@ export const resetPassword = createAsyncThunk("/auth/change/password", async ({ 
     }
 });
 
-// Admin can do CRUD operations on users
+// User can deactivate their account
+export const deactivateUserAccount = createAsyncThunk("/user/deactivate-account", async () => {
+    try {
+        const res = await axiosInstance.put("/users/account/deactivate");
+        toast.promise(res, {
+            loading: "Wait! Deactivating account...",
+            success: (data) => {
+                return data?.data?.message;
+            },
+            error: "Failed to deactivate user account",
+        });
+
+        // getting response resolved here
+        res = await res;
+        return res.data;
+    } catch (error) {
+        toast.error(error.message);
+    }
+});
+
+// User can permanantly delete their account
+export const deleteUserAccount = createAsyncThunk("/user/delete-account", async () => {
+    try {
+        const res = await axiosInstance.delete("/users/account/delete");
+        toast.promise(res, {
+            loading: "Wait! Permanently Deleting user account...",
+            success: (data) => {
+                return data?.data?.message;
+            },
+            error: "Failed to Delete user account",
+        });
+        // getting response resolved here
+        res = await res;
+        return res.data;
+    } catch (error) {
+        toast.error(error.message);
+    }
+});
 
 // function to handle update user by Admin
 export const updateUserProfileByAdmin = createAsyncThunk("/auth/admin/update-user-profile", async (data) => {
