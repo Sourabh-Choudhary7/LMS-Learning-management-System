@@ -504,12 +504,15 @@ const updateUserByAdmin = async (req, res, next) => {
     try {
         const { userId } = req.params;
         const { fullName } = req.body;
-        console.log(userId)
-
         const user = await User.findById(userId);
 
         if (!user) {
             return next(new AppError('Invalid user id or user does not exist'));
+        }
+        if (user.role === 'ADMIN') {
+            return next(
+                new AppError("Can't do any action on Admin", 400)
+            );
         }
 
         if (fullName) {
@@ -562,11 +565,17 @@ const updateUserByAdmin = async (req, res, next) => {
 
 const deleteUserByAdmin = async (req, res, next) => {
     try {
-        const {userId} = req.params;
-        const user = await User.findByIdAndDelete(userId);
+        const { userId } = req.params;
+        const user = await User.findById(userId);
         if (!user) {
             return next(new AppError('Invalid user id or user does not exist'));
         }
+        if (user.role === 'ADMIN') {
+            return next(
+                new AppError("Can't do any action on Admin", 400)
+            );
+        }
+        await User.findByIdAndDelete(userId);
         res.status(200).json({
             success: true,
             message: 'User deleted successfully'
