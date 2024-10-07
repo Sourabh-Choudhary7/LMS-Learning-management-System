@@ -158,7 +158,7 @@ const AllUsers = () => {
                             <tbody>
                                 {usersList?.map((element, index) => {
                                     return (
-                                        <tr key={element?._id}>
+                                        <tr key={element?._id || index}>
                                             <td>{index + 1}</td>
                                             <td>
                                                 {
@@ -274,7 +274,7 @@ const AllUsers = () => {
                                                         }
                                                     </td>
                                                     :
-                                                    <td td className="flex items-center gap-4">
+                                                    <td className="flex items-center gap-4">
                                                         Can't do any action
                                                     </td>
                                             }
