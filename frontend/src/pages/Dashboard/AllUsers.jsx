@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import Layout from '../../layout/Layout';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
@@ -113,6 +113,18 @@ const AllUsers = () => {
             await dispatch(getAllUsers());
         setIsConfirmModalOpen(false);
     }
+
+    const [search, setSearch] = useState('')
+    const handleInputSearchChange = (e) => {
+        setSearch(e.target.value);
+        console.log(e.target.value);
+    }
+    const filteredUsers = useMemo(() => {
+        if (!search) return usersList;
+        return usersList.filter(user =>
+            user.fullName.toLowerCase().includes(search.toLowerCase())
+        );
+    }, [usersList, search]);
     return (
         <Layout>
             <div className="min-h-[80vh]  flex flex-col flex-wrap gap-10 text-white">
@@ -122,7 +134,7 @@ const AllUsers = () => {
                 <div className="mx-[10%] w-[80%] self-center flex flex-col items-center justify-center gap-10 mb-10">
                     <div className="w-full flex gap-4 max-md:flex-col">
                         <div className='w-1/3 max-md:w-full'>
-                            <input type="text" placeholder='Search user by name...' className='input input-bordered border-white px-2 py-2 bg-transparent w-full' />
+                            <input type="text" onChange={handleInputSearchChange} value={search} placeholder='Search user by name...' className='input input-bordered border-white px-2 py-2 bg-transparent w-full' />
                         </div>
                         <div className="relative w-1/3 max-md:w-full">
                             <select name="users" id="users" className="appearance-none input input-bordered border-white px-2 py-2 bg-transparent w-full cursor-pointer">
@@ -135,9 +147,11 @@ const AllUsers = () => {
                                 <IoMdArrowDropdown />
                             </span>
                         </div>
-                        <div className='w-1/3 flex gap-4 max-md:w-full'>
-                            <button className='btn btn-secondary btn-outline w-1/2'>Clear Filter</button>
-                            <button className='btn btn-primary btn-outline w-1/2'>Export</button>
+                        <div className='w-1/6 flex gap-4 max-md:w-full'>
+                            <button className='btn btn-secondary btn-outline w-full'>Clear Filter</button>
+                        </div>
+                        <div className='w-1/6 flex gap-4 max-md:w-full'>
+                            <button className='btn btn-primary btn-outline w-full'>Export</button>
                         </div>
                     </div>
 
@@ -156,132 +170,141 @@ const AllUsers = () => {
                             </thead>
 
                             <tbody>
-                                {usersList?.map((element, index) => {
-                                    return (
-                                        <tr key={element?._id || index}>
-                                            <td>{index + 1}</td>
-                                            <td>
-                                                {
-                                                    isEditable && (selectedUser?.id === element._id) ?
-                                                        (
-                                                            <div>
-                                                                <figure>
-                                                                    <label htmlFor="image_uploads" className="cursor-pointer flex relative">
-                                                                        {selectedUser.previewImage ? (
-                                                                            <img
-                                                                                className="w-10 object-cover rounded-full border-2 border-white"
-                                                                                src={selectedUser.previewImage}
-                                                                                alt="Profile"
-                                                                            />
-                                                                        ) : (
-                                                                            <BsPersonCircle className="w-10 object-cover rounded-full border-2 border-white" />
-                                                                        )}
-
-                                                                        {/* Camera Icon Overlay */}
-                                                                        <div className="absolute bg-gray-800 p-1 rounded-full text-white top-6 left-8">
-                                                                            <FaCamera />
-                                                                        </div>
-                                                                    </label>
-                                                                    <input
-                                                                        onChange={getImage}
-                                                                        className="hidden"
-                                                                        type="file"
-                                                                        name="image_uploads"
-                                                                        id="image_uploads"
-                                                                        accept=".jpg, .jpeg, .png, .svg"
-                                                                    />
-                                                                </figure>
-                                                            </div>
-                                                        )
-                                                        :
-                                                        (
-                                                            <div className="w-10 rounded-full cursor-pointer" onClick={() => toggleModal(element?.avatar?.secure_url)}>
-                                                                <img
-                                                                    alt="User avatar"
-                                                                    src={element?.avatar?.secure_url}
-                                                                />
-                                                            </div>
-                                                        )
-                                                }
-
-                                            </td>
-                                            <td>
-                                                {
-                                                    isEditable && (selectedUser?.id === element._id) ? (
-                                                        <input
-                                                            type="text"
-                                                            name="fullName"
-                                                            id="fullName"
-                                                            value={selectedUser.fullName}
-                                                            onChange={handleInputChange}
-                                                            className="input input-bordered w-full max-w-xs"
-                                                        />
-                                                    ) : (
-                                                        element?.fullName?.split(' ')
-                                                            .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-                                                            .join(' ')
-                                                    )
-                                                }
-                                            </td>
-                                            <td>{element?.email}</td>
-                                            <td>{element?.role}</td>
-                                            <td>
-                                                <span className={`rounded-full text-sm ${(element?.subscription?.status) === 'active' ? 'px-2 py-1 bg-green-700 text-white text-l' : 'px-2 py-1 text-yellow-500 text-l'} `}>
-                                                    {element?.subscription?.status}
-                                                </span>
-                                            </td>
-                                            {
-                                                element?.role !== 'ADMIN' ?
-                                                    <td className="flex items-center gap-4">
+                                {
+                                    filteredUsers.length > 0 ? (
+                                        filteredUsers?.map((element, index) => {
+                                            return (
+                                                <tr key={element?._id || index}>
+                                                    <td>{index + 1}</td>
+                                                    <td>
                                                         {
                                                             isEditable && (selectedUser?.id === element._id) ?
                                                                 (
-                                                                    <>
-                                                                        {/* Tick button to confirm the update */}
-                                                                        <button
-                                                                            onClick={() => handleUpdateUser(element?._id)}
-                                                                            className="bg-green-500 hover:bg-green-600 transition-all ease-in-out duration-30 text-xl py-2 px-4 rounded-md font-bold max-md:px-2 max-md:py-1 max-md:text-sm"
-                                                                        >
-                                                                            <TiTick />
-                                                                        </button>
-                                                                        {/* Cancel button to discard changes */}
-                                                                        <button
-                                                                            onClick={() => setIsEditable(!isEditable)} // Passing null to reset the editable state
-                                                                            className="bg-red-500 hover:bg-red-600 transition-all ease-in-out duration-30 text-xl py-2 px-4 rounded-md font-bold max-md:px-2 max-md:py-1 max-md:text-sm"
-                                                                        >
-                                                                            <ImCross />
-                                                                        </button>
-                                                                    </>
-                                                                ) :
+                                                                    <div>
+                                                                        <figure>
+                                                                            <label htmlFor="image_uploads" className="cursor-pointer flex relative">
+                                                                                {selectedUser.previewImage ? (
+                                                                                    <img
+                                                                                        className="w-10 object-cover rounded-full border-2 border-white"
+                                                                                        src={selectedUser.previewImage}
+                                                                                        alt="Profile"
+                                                                                    />
+                                                                                ) : (
+                                                                                    <BsPersonCircle className="w-10 object-cover rounded-full border-2 border-white" />
+                                                                                )}
+
+                                                                                {/* Camera Icon Overlay */}
+                                                                                <div className="absolute bg-gray-800 p-1 rounded-full text-white top-6 left-8">
+                                                                                    <FaCamera />
+                                                                                </div>
+                                                                            </label>
+                                                                            <input
+                                                                                onChange={getImage}
+                                                                                className="hidden"
+                                                                                type="file"
+                                                                                name="image_uploads"
+                                                                                id="image_uploads"
+                                                                                accept=".jpg, .jpeg, .png, .svg"
+                                                                            />
+                                                                        </figure>
+                                                                    </div>
+                                                                )
+                                                                :
                                                                 (
-                                                                    <>
-                                                                        {/* Edit button */}
-                                                                        <button
-                                                                            onClick={() => toggleEditMode(element)}
-                                                                            className="bg-green-500 hover:bg-green-600 transition-all ease-in-out duration-30 text-xl py-2 px-4 rounded-md font-bold max-md:px-2 max-md:py-1 max-md:text-sm"
-                                                                        >
-                                                                            <LiaUserEditSolid />
-                                                                        </button>
-                                                                        {/* Delete button */}
-                                                                        <button
-                                                                            onClick={() => toggleModal(element?._id)}
-                                                                            className="bg-red-500 hover:bg-red-600 transition-all ease-in-out duration-30 text-xl py-2 px-4 rounded-md font-bold max-md:px-2 max-md:py-1 max-md:text-sm"
-                                                                        >
-                                                                            <BsTrash />
-                                                                        </button>
-                                                                    </>
+                                                                    <div className="w-10 rounded-full cursor-pointer" onClick={() => toggleModal(element?.avatar?.secure_url)}>
+                                                                        <img
+                                                                            alt="User avatar"
+                                                                            src={element?.avatar?.secure_url}
+                                                                        />
+                                                                    </div>
                                                                 )
                                                         }
-                                                    </td>
-                                                    :
-                                                    <td className="flex items-center gap-4">
-                                                        Can't do any action
-                                                    </td>
-                                            }
 
-                                        </tr>
-                                    );
-                                })}
+                                                    </td>
+                                                    <td>
+                                                        {
+                                                            isEditable && (selectedUser?.id === element._id) ? (
+                                                                <input
+                                                                    type="text"
+                                                                    name="fullName"
+                                                                    id="fullName"
+                                                                    value={selectedUser.fullName}
+                                                                    onChange={handleInputChange}
+                                                                    className="input input-bordered w-full max-w-xs"
+                                                                />
+                                                            ) : (
+                                                                element?.fullName?.split(' ')
+                                                                    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+                                                                    .join(' ')
+                                                            )
+                                                        }
+                                                    </td>
+                                                    <td>{element?.email}</td>
+                                                    <td>{element?.role}</td>
+                                                    <td>
+                                                        <span className={`rounded-full text-sm ${(element?.subscription?.status) === 'active' ? 'px-2 py-1 bg-green-700 text-white text-l' : 'px-2 py-1 text-yellow-500 text-l'} `}>
+                                                            {element?.subscription?.status}
+                                                        </span>
+                                                    </td>
+                                                    {
+                                                        element?.role !== 'ADMIN' ?
+                                                            <td className="flex items-center gap-4">
+                                                                {
+                                                                    isEditable && (selectedUser?.id === element._id) ?
+                                                                        (
+                                                                            <>
+                                                                                {/* Tick button to confirm the update */}
+                                                                                <button
+                                                                                    onClick={() => handleUpdateUser(element?._id)}
+                                                                                    className="bg-green-500 hover:bg-green-600 transition-all ease-in-out duration-30 text-xl py-2 px-4 rounded-md font-bold max-md:px-2 max-md:py-1 max-md:text-sm"
+                                                                                >
+                                                                                    <TiTick />
+                                                                                </button>
+                                                                                {/* Cancel button to discard changes */}
+                                                                                <button
+                                                                                    onClick={() => setIsEditable(!isEditable)} // Passing null to reset the editable state
+                                                                                    className="bg-red-500 hover:bg-red-600 transition-all ease-in-out duration-30 text-xl py-2 px-4 rounded-md font-bold max-md:px-2 max-md:py-1 max-md:text-sm"
+                                                                                >
+                                                                                    <ImCross />
+                                                                                </button>
+                                                                            </>
+                                                                        ) :
+                                                                        (
+                                                                            <>
+                                                                                {/* Edit button */}
+                                                                                <button
+                                                                                    onClick={() => toggleEditMode(element)}
+                                                                                    className="bg-green-500 hover:bg-green-600 transition-all ease-in-out duration-30 text-xl py-2 px-4 rounded-md font-bold max-md:px-2 max-md:py-1 max-md:text-sm"
+                                                                                >
+                                                                                    <LiaUserEditSolid />
+                                                                                </button>
+                                                                                {/* Delete button */}
+                                                                                <button
+                                                                                    onClick={() => toggleModal(element?._id)}
+                                                                                    className="bg-red-500 hover:bg-red-600 transition-all ease-in-out duration-30 text-xl py-2 px-4 rounded-md font-bold max-md:px-2 max-md:py-1 max-md:text-sm"
+                                                                                >
+                                                                                    <BsTrash />
+                                                                                </button>
+                                                                            </>
+                                                                        )
+                                                                }
+                                                            </td>
+                                                            :
+                                                            <td className="flex items-center gap-4">
+                                                                Can't do any action
+                                                            </td>
+                                                    }
+
+                                                </tr>
+                                            );
+                                        })
+                                    ) :
+                                        (
+                                            <tr>
+                                            <td className="text-lg">No users found matching your search.</td>
+                                            </tr>
+                                        )
+                                }
                             </tbody>
                         </table>
                     </div>
