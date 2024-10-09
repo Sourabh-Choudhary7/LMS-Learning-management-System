@@ -313,7 +313,7 @@ const AllUsers = () => {
                                                     </td>
                                                     {
                                                         element?.role !== 'ADMIN' ?
-                                                            <td className="flex items-center gap-4">
+                                                            <td className="flex items-center gap-2">
                                                                 {
                                                                     isEditable && (selectedUser?.id === element._id) ?
                                                                         (
@@ -321,14 +321,14 @@ const AllUsers = () => {
                                                                                 {/* Tick button to confirm the update */}
                                                                                 <button
                                                                                     onClick={() => handleUpdateUser(element?._id)}
-                                                                                    className="bg-green-500 hover:bg-green-600 transition-all ease-in-out duration-30 text-xl py-2 px-4 rounded-md font-bold max-md:px-2 max-md:py-1 max-md:text-sm"
+                                                                                    className="hover:bg-green-600 transition-all ease-in-out duration-30 text-xl py-2 px-4 rounded-md font-bold max-md:px-2 max-md:py-1 max-md:text-sm"
                                                                                 >
                                                                                     <TiTick />
                                                                                 </button>
                                                                                 {/* Cancel button to discard changes */}
                                                                                 <button
                                                                                     onClick={() => setIsEditable(!isEditable)} // Passing null to reset the editable state
-                                                                                    className="bg-red-500 hover:bg-red-600 transition-all ease-in-out duration-30 text-xl py-2 px-4 rounded-md font-bold max-md:px-2 max-md:py-1 max-md:text-sm"
+                                                                                    className="hover:bg-red-600 transition-all ease-in-out duration-30 text-l py-2 px-4 rounded-md font-bold max-md:px-2 max-md:py-1 max-md:text-sm"
                                                                                 >
                                                                                     <ImCross />
                                                                                 </button>
@@ -339,14 +339,14 @@ const AllUsers = () => {
                                                                                 {/* Edit button */}
                                                                                 <button
                                                                                     onClick={() => toggleEditMode(element)}
-                                                                                    className="bg-green-500 hover:bg-green-600 transition-all ease-in-out duration-30 text-xl py-2 px-4 rounded-md font-bold max-md:px-2 max-md:py-1 max-md:text-sm"
+                                                                                    className="hover:bg-green-600 transition-all ease-in-out duration-30 text-xl py-2 px-4 rounded-md font-bold max-md:px-2 max-md:py-1 max-md:text-sm"
                                                                                 >
                                                                                     <LiaUserEditSolid />
                                                                                 </button>
                                                                                 {/* Delete button */}
                                                                                 <button
                                                                                     onClick={() => toggleModal(element?._id)}
-                                                                                    className="bg-red-500 hover:bg-red-600 transition-all ease-in-out duration-30 text-xl py-2 px-4 rounded-md font-bold max-md:px-2 max-md:py-1 max-md:text-sm"
+                                                                                    className="hover:bg-red-600 transition-all ease-in-out duration-30 text-xl py-2 px-4 rounded-md font-bold max-md:px-2 max-md:py-1 max-md:text-sm"
                                                                                 >
                                                                                     <BsTrash />
                                                                                 </button>
