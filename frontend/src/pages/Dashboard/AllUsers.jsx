@@ -1,17 +1,17 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import Layout from '../../layout/Layout';
 import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
 import { getAllUsers } from '../../redux/Slices/statsSlice';
-import { BsCollectionPlayFill, BsPersonCircle, BsTrash } from 'react-icons/bs';
+import { BsPersonCircle, BsTrash } from 'react-icons/bs';
 import { LiaUserEditSolid } from 'react-icons/lia';
 import { deleteUserByAdmin, updateUserProfileByAdmin } from '../../redux/Slices/AuthSlice';
 import { TiTick } from 'react-icons/ti';
 import { ImCross } from 'react-icons/im';
-import { FaCamera } from 'react-icons/fa';
+import { FaCamera, FaSearch } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import { IoMdArrowDropdown } from 'react-icons/io';
 import * as XLSX from 'xlsx';
+import { PiExportFill } from 'react-icons/pi';
 
 const AllUsers = () => {
     const dispatch = useDispatch();
@@ -192,8 +192,11 @@ const AllUsers = () => {
                 </h1>
                 <div className="mx-[10%] w-[80%] self-center flex flex-col items-center justify-center gap-10 mb-10">
                     <div className="w-full flex gap-4 max-md:flex-col">
-                        <div className='w-1/3 max-md:w-full'>
+                        <div className='relative w-1/3 max-md:w-full'>
                             <input type="text" onChange={handleInputSearchChange} value={search} placeholder='Search user by name...' className='input input-bordered border-white px-2 py-2 bg-transparent w-full' />
+                            <span className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none opacity-50">
+                                <FaSearch />
+                            </span>
                         </div>
                         <div className="relative w-1/3 max-md:w-full">
                             <select
@@ -213,10 +216,11 @@ const AllUsers = () => {
                             </span>
                         </div>
                         <div className='w-1/6 flex gap-4 max-md:w-full'>
-                            <button className='btn btn-secondary btn-outline w-full' onClick={clearFilter}>Clear Filter</button>
+                            <button className='btn btn-secondary btn-outline w-full text-l' onClick={clearFilter}>Clear Filter</button>
                         </div>
                         <div className='w-1/6 flex gap-4 max-md:w-full'>
-                            <button className='btn btn-primary btn-outline w-full' onClick={exportToExcel}>Export</button>
+                            <button className='btn btn-primary btn-outline w-full text-l' onClick={exportToExcel}>Export <PiExportFill />
+                            </button>
                         </div>
                     </div>
 
