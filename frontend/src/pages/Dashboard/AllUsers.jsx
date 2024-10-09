@@ -11,13 +11,15 @@ import { ImCross } from 'react-icons/im';
 import { FaCamera } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import { IoMdArrowDropdown } from 'react-icons/io';
+import * as XLSX from 'xlsx';
 
 const AllUsers = () => {
     const dispatch = useDispatch();
-    const navigate = useNavigate();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
     const [isEditable, setIsEditable] = useState(false);
+    const [search, setSearch] = useState('')
+    const [userType, setUserType] = useState('all-user');
     const [selectedUser, setSelectedUser] = useState({
         id: "",
         avatar: null,
@@ -58,6 +60,7 @@ const AllUsers = () => {
             [name]: value,
         });
     }
+
     const getImage = (e) => {
         e.preventDefault();
         const uploadedImage = e.target.files[0];
@@ -107,6 +110,7 @@ const AllUsers = () => {
         setIsEditable(false);
 
     }
+
     const handleUserDelete = async (userId) => {
         const response = await dispatch(deleteUserByAdmin(userId));
         if (response?.payload?.success)
@@ -114,17 +118,72 @@ const AllUsers = () => {
         setIsConfirmModalOpen(false);
     }
 
-    const [search, setSearch] = useState('')
     const handleInputSearchChange = (e) => {
         setSearch(e.target.value);
-        console.log(e.target.value);
     }
+
+    const handleUserTypeChange = (e) => {
+        setUserType(e.target.value);
+    }
+
     const filteredUsers = useMemo(() => {
-        if (!search) return usersList;
-        return usersList.filter(user =>
-            user.fullName.toLowerCase().includes(search.toLowerCase())
-        );
-    }, [usersList, search]);
+        let users = usersList || [];
+        if (search) {
+            users = users.filter(user =>
+                user.fullName.toLowerCase().includes(search.toLowerCase())
+            );
+        }
+        if (userType === 'active-user') {
+            users = users?.filter((user) => user?.account_active === true)
+        }
+        if (userType === 'enrolled-user') {
+            users = users?.filter((user) => user?.subscription?.status === 'active')
+        }
+        if (userType === 'inactive-user') {
+            users = users?.filter((user) => user?.account_active === false)
+        }
+        return users;
+    }, [usersList, search, userType]);
+
+    const clearFilter = () => {
+        setSearch('');
+        setUserType('all-user');
+    }
+
+    // handle export function
+    const exportToExcel = () => {
+        if (filteredUsers.length === 0) {
+            toast.error('No data to export');
+            return;
+        }
+
+        const worksheetData = filteredUsers.map(user => ({
+            'Full Name': user.fullName,
+            'Email': user.email,
+            'Role': user.role,
+            'Subscription Status': user.subscription?.status,
+        }));
+
+        // Create a new worksheet from the filtered users data
+        const worksheet = XLSX.utils.json_to_sheet(worksheetData);
+
+        // Set column widths
+        worksheet['!cols'] = [
+            { wch: 20 },
+            { wch: 30 },
+            { wch: 15 },
+            { wch: 20 }
+        ];
+
+        // Create a new workbook and add the worksheet
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Users Data');
+
+        // Export the workbook as an Excel file
+        XLSX.writeFile(workbook, 'users_data.xlsx');
+        toast.success('Data is exported successfully')
+    };
+
     return (
         <Layout>
             <div className="min-h-[80vh]  flex flex-col flex-wrap gap-10 text-white">
@@ -137,7 +196,13 @@ const AllUsers = () => {
                             <input type="text" onChange={handleInputSearchChange} value={search} placeholder='Search user by name...' className='input input-bordered border-white px-2 py-2 bg-transparent w-full' />
                         </div>
                         <div className="relative w-1/3 max-md:w-full">
-                            <select name="users" id="users" className="appearance-none input input-bordered border-white px-2 py-2 bg-transparent w-full cursor-pointer">
+                            <select
+                                name="users"
+                                id="users"
+                                className="appearance-none input input-bordered border-white px-2 py-2 bg-transparent w-full cursor-pointer"
+                                onChange={handleUserTypeChange}
+                                value={userType}
+                            >
                                 <option value="all-user" className='bg-gray-900'>All User</option>
                                 <option value="active-user" className='bg-gray-900'>Active User</option>
                                 <option value="enrolled-user" className='bg-gray-900'>Enrolled User</option>
@@ -148,10 +213,10 @@ const AllUsers = () => {
                             </span>
                         </div>
                         <div className='w-1/6 flex gap-4 max-md:w-full'>
-                            <button className='btn btn-secondary btn-outline w-full'>Clear Filter</button>
+                            <button className='btn btn-secondary btn-outline w-full' onClick={clearFilter}>Clear Filter</button>
                         </div>
                         <div className='w-1/6 flex gap-4 max-md:w-full'>
-                            <button className='btn btn-primary btn-outline w-full'>Export</button>
+                            <button className='btn btn-primary btn-outline w-full' onClick={exportToExcel}>Export</button>
                         </div>
                     </div>
 
@@ -301,7 +366,7 @@ const AllUsers = () => {
                                     ) :
                                         (
                                             <tr>
-                                            <td className="text-lg">No users found matching your search.</td>
+                                                <td className="text-lg">No users found matching your search.</td>
                                             </tr>
                                         )
                                 }
