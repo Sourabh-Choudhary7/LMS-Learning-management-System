@@ -38,9 +38,20 @@ const AdminDashboard = () => {
   const { allUsersCount, activeUsersCount, inActiveUsersCount, subscribedUsersCount } = useSelector(
     (state) => state.stats
   );
-  const { allPayments, finalMonths, monthlySalesRecord } = useSelector(
+  const { allPayments, activePayments, finalMonths, monthlySalesRecord } = useSelector(
     (state) => state?.payment
   );
+  let activePaymentsWithUsers = { paymentDetails: [] }; // Initialize data as an array
+
+  // Push data from activePayments into activePaymentsWithUsers
+  if (activePayments && activePayments.length > 0) {
+    activePayments.forEach((payment) => {
+      activePaymentsWithUsers.paymentDetails.push({
+        ...payment
+      });
+    });
+  }
+
   const totalSubscriptionsCount = allPayments?.data?.length || 0; // Number of subscriptions
   // total Profit amount
   const totalRevenue = allPayments?.data?.reduce((total, payment) => {
@@ -172,7 +183,7 @@ const AdminDashboard = () => {
               </div>
             </div>
             <div>
-              <button className="btn btn-secondary btn-md btn-outline" onClick={() => { navigate('/admin/payment-records', { state: { ...allPayments } }) }}>Payment Records</button>
+              <button className="btn btn-secondary btn-md btn-outline" onClick={() => { navigate('/admin/payment-records', { state: { ...allPayments, ...activePaymentsWithUsers } }) }}>Payment Records</button>
             </div>
           </div>
         </div>

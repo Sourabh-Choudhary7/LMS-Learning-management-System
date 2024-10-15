@@ -4,8 +4,8 @@ import { useLocation } from 'react-router-dom'
 import { BiRupee } from 'react-icons/bi';
 
 const PaymentRecords = () => {
-    const allPayments = useLocation().state;
-    console.log("All payments", allPayments)
+    const payments = useLocation().state;
+    console.log(payments)
 
     return (
         <Layout>
@@ -13,12 +13,13 @@ const PaymentRecords = () => {
                 <h1 className="text-center text-3xl font-semibold text-yellow-500">
                     Payment Records List
                 </h1>
-                <div className="mx-[10%] w-[80%] self-center flex flex-col items-center justify-center gap-10 mb-10">
+                <div className="mx-[5%] w-[90%] self-center flex flex-col items-center justify-center gap-10 mb-10">
                     <div className="overflow-x-auto w-full">
                         <table className="table w-full">
                             <thead className='text-l font-bold'>
                                 <tr>
                                     <th>SL No.</th>
+                                    <th>Customer Name</th>
                                     <th>Customer Id</th>
                                     <th>Subscription Id</th>
                                     <th>Created</th>
@@ -30,12 +31,23 @@ const PaymentRecords = () => {
                             </thead>
 
                             <tbody>
-                                {allPayments.data?.map((element, index) => {
+                                {payments.data?.map((element, index) => {
                                     const timestamp = element?.created;
                                     const created = new Date(timestamp * 1000);
+                                    // Assuming paymentDetails should correspond to the current payment element
+                                    const paymentDetail = payments.paymentDetails?.find(
+                                        detail => detail.subscription.id === element.id // Adjust this based on how you correlate both arrays
+                                    );
                                     return (
                                         <tr key={element?._id || index}>
                                             <td>{index + 1}</td>
+                                            <td>
+                                                {
+                                                    paymentDetail?.fullName?.split(' ')
+                                                        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+                                                        .join(' ')
+                                                }
+                                            </td>
                                             <td>
                                                 {element?.customer}
                                             </td>

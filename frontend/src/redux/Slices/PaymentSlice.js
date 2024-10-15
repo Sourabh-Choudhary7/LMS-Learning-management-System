@@ -7,6 +7,7 @@ const initialState = {
     subscription_id: "",
     isPaymentVerified: false,
     allPayments: {},
+    activePayments: {},
     finalMonths: {},
     monthlySalesRecord: []
 }
@@ -24,7 +25,7 @@ export const getStripePayKey = createAsyncThunk("/payments/getStripeKey", async 
 export const buySubcription = createAsyncThunk("/payments/purchaseCourse", async () => {
     try {
         const res = axiosInstance.post("/payments/subscribe");
-        console.log("Purchase Course Subscription: ",res);
+        console.log("Purchase Course Subscription: ", res);
         return (await res).data;
     } catch (error) {
         toast.error(error?.response?.data?.message);
@@ -34,7 +35,7 @@ export const buySubcription = createAsyncThunk("/payments/purchaseCourse", async
 export const verifyPayment = createAsyncThunk("/payments/verifyPayment", async (session_id) => {
     try {
         const res = axiosInstance.post("/payments/verify", session_id);
-        console.log("verify Payment: ",res);
+        console.log("verify Payment: ", res);
         return (await res).data;
     } catch (error) {
         toast.error(error?.response?.data?.message);
@@ -52,14 +53,14 @@ export const cancelCourseBundle = createAsyncThunk("/payments/cancel", async () 
             error: "Failed to ubsubscribe"
         })
         return (await res).data;
-    } catch(error) {
+    } catch (error) {
         toast.error(error?.response?.data?.message);
     }
 });
 
 export const getPaymentRecord = createAsyncThunk("/payments/record", async () => {
     try {
-        const response = axiosInstance.get("/payments?count=100", );
+        const response = axiosInstance.get("/payments?count=100",);
         toast.promise(response, {
             loading: "Getting the payment records",
             success: (data) => {
@@ -68,7 +69,7 @@ export const getPaymentRecord = createAsyncThunk("/payments/record", async () =>
             error: "Failed to get payment records"
         })
         return (await response).data;
-    } catch(error) {
+    } catch (error) {
         toast.error("Operation failed");
     }
 });
@@ -100,6 +101,7 @@ const paymentSlice = createSlice({
             })
             .addCase(getPaymentRecord.fulfilled, (state, action) => {
                 state.allPayments = action?.payload?.allPayments;
+                state.activePayments = action?.payload?.activePayments;
                 state.finalMonths = action?.payload?.finalMonths;
                 state.monthlySalesRecord = action?.payload?.monthlySalesRecord;
             })
