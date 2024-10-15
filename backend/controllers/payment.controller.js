@@ -50,7 +50,7 @@ export const buySubscription = async (req, res, next) => {
       success_url: `${YOUR_DOMAIN}/checkout/success?success=true&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${YOUR_DOMAIN}/checkout/fail?canceled=true`,
     });
-
+    
     // Retrieve the subscription ID from the session object and store it
     user.subscription.id = session.id;
     user.subscription.status = 'pending';
@@ -92,14 +92,16 @@ export const verifySubscription = async (req, res, next) => {
 
       // If payment_intent is not available, try to retrieve the invoice
       let paymentIntentId = session.payment_intent;
+      let invoice;
       if (!paymentIntentId) {
-        const invoice = await stripe.invoices.retrieve(session.invoice);
+        invoice = await stripe.invoices.retrieve(session.invoice);
         paymentIntentId = invoice.payment_intent; // Get the payment intent from the invoice
       }
 
       if (!paymentIntentId) {
         return next(new AppError('Payment intent is not available', 400));
       }
+
       const user = await User.findById(id);
 
       // Create payment record
@@ -117,10 +119,17 @@ export const verifySubscription = async (req, res, next) => {
       user.subscription.status = 'active';
       await user.save();
 
+      // Retrieve the invoice URL to send to the user
+      if (!invoice) {
+        invoice = await stripe.invoices.retrieve(session.invoice);
+      }
+      const invoiceUrl = invoice.hosted_invoice_url;
+
       return res.status(200).json({
         success: true,
         message: 'Payment verified successfully',
         payment: paymentRecord, // Return the created payment record if needed
+        invoiceUrl, // Attach the invoice URL for user's reference
       });
     } else {
       return next(new AppError('Session is not for a subscription', 400));
@@ -130,6 +139,66 @@ export const verifySubscription = async (req, res, next) => {
     return next(new AppError(error.message, 500));
   }
 };
+
+// export const verifySubscription = async (req, res, next) => {
+//   const { id } = req.user;
+//   const { session_id } = req.body;
+
+//   if (!session_id) {
+//     return next(new AppError('Session ID is required', 400));
+//   }
+//     const completedSession = await stripe.checkout.sessions.retrieve(session_id);
+//     const invoiceId = completedSession.invoice;
+//     const invoiceUrl = await stripe.invoices.retrieve(invoiceId);
+//     console.log("Invoice url: ", invoiceUrl)
+
+//   try {
+//     // Retrieve the Checkout session from Stripe
+//     const session = await stripe.checkout.sessions.retrieve(session_id);
+
+//     if (session.mode === 'subscription') {
+//       const subscriptionId = session.subscription;
+
+//       // If payment_intent is not available, try to retrieve the invoice
+//       let paymentIntentId = session.payment_intent;
+//       if (!paymentIntentId) {
+//         const invoice = await stripe.invoices.retrieve(session.invoice);
+//         paymentIntentId = invoice.payment_intent; // Get the payment intent from the invoice
+//       }
+
+//       if (!paymentIntentId) {
+//         return next(new AppError('Payment intent is not available', 400));
+//       }
+//       const user = await User.findById(id);
+
+//       // Create payment record
+//       const paymentRecord = await Payment.create({
+//         stripe_payment_intent_id: paymentIntentId,
+//         stripe_signature: session.id, // Use session ID as a signature placeholder or adjust accordingly
+//         stripe_subscription_id: subscriptionId,
+//         user: user._id,
+//         amount: session.amount_total,
+//         currency: session.currency,
+//       });
+
+//       // Update the user's subscription status in the database
+//       user.subscription.id = subscriptionId;
+//       user.subscription.status = 'active';
+//       await user.save();
+
+//       return res.status(200).json({
+//         success: true,
+//         message: 'Payment verified successfully',
+//         payment: paymentRecord, // Return the created payment record if needed
+//       });
+//     } else {
+//       return next(new AppError('Session is not for a subscription', 400));
+//     }
+//   } catch (error) {
+//     console.error('Error verifying subscription:', error);
+//     return next(new AppError(error.message, 500));
+//   }
+// };
 
 /**
  * @CANCEL_SUBSCRIPTION
