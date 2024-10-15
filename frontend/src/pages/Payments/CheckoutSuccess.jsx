@@ -1,9 +1,9 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import Layout from '../../layout/Layout';
 import { AiFillCheckCircle } from 'react-icons/ai';
 import { useDispatch } from 'react-redux';
 import { getUserData } from '../../redux/Slices/AuthSlice';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, redirect, useLocation, useNavigate } from 'react-router-dom';
 import { verifyPayment } from '../../redux/Slices/PaymentSlice';
 import toast from 'react-hot-toast';
 
@@ -11,6 +11,7 @@ const CheckoutSuccess = () => {
     const dispatch = useDispatch();
     const location = useLocation();
     const navigate = useNavigate();
+    const [invoiceUrl, setInvoiceUrl] = useState(null);
 
     useEffect(() => {
         const queryParams = new URLSearchParams(location.search);
@@ -27,6 +28,13 @@ const CheckoutSuccess = () => {
                 if (verifyRes?.payload?.success) {
                     // Fetch user data if payment verification is successful
                     dispatch(getUserData());
+                    const invoiceUrlData = verifyRes?.payload?.invoiceUrl
+                    if(invoiceUrlData) {
+                        setInvoiceUrl(invoiceUrlData);
+                    }
+                    else {
+                        toast.error("Failed to retrieve invoice URL. Please contact support.");
+                    }
                 } else {
                     navigate('/checkout/fail');
                     toast.error("Payment verification failed. Please contact support.");
@@ -39,6 +47,14 @@ const CheckoutSuccess = () => {
             toast.error("Payment was not successful.");
         }
     }, [dispatch, location.search, navigate]);
+
+    const handleDownloadInvoice = () => {
+        if (invoiceUrl) {
+            window.open(invoiceUrl, '_blank'); // Open the invoice in a new tab
+        } else {
+            toast.error("Invoice not available.");
+        }
+    }
 
     return (
         <Layout>
@@ -53,10 +69,14 @@ const CheckoutSuccess = () => {
                         </div>
                         <AiFillCheckCircle className="text-green-500 text-5xl" />
                     </div>
+                    <div className="btn btn-outline btn-success mt-4">
+                        <button onClick={handleDownloadInvoice}>Download Invoice</button>
+                    </div>
 
                     <Link to="/courses" className="bg-green-500 hover:bg-green-600 transition-all ease-in-out duration-300 absolute bottom-0 w-full py-2 text-xl font-semibold text-center rounded-br-lg rounded-bl-lg">
                         <button>Go to dashboard</button>
                     </Link>
+                    
                 </div>
             </div>
         </Layout>
