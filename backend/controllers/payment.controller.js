@@ -3,6 +3,7 @@ import User from '../models/user.model.js';
 import AppError from '../utils/error.utils.js';
 import Payment from '../models/payment.model.js';
 import dotenv from 'dotenv';
+import mongoose from 'mongoose';
 
 dotenv.config();
 
@@ -234,6 +235,23 @@ export const allPayments = async (req, res, _next) => {
     starting_after: skip ? skip : undefined, // If skip is sent then use that else default to undefined
   });
 
+  // join users collection with payments collection
+  const activePayments = await mongoose.connection.db.collection('users').aggregate([
+    {
+      $lookup: {
+        from: 'payments',
+        localField: 'subscription.id',
+        foreignField: 'stripe_subscription_id',
+        as: 'PaymentDetails'
+      }
+    },
+    {
+      $match: {
+        'subscription.status': 'active' // Filter for users with active subscriptions
+      }
+    }
+  ]).toArray();
+
   const monthNames = [
     'January',
     'February',
@@ -277,6 +295,7 @@ export const allPayments = async (req, res, _next) => {
     success: true,
     message: 'All payments',
     allPayments,
+    activePayments,
     finalMonths,
     monthlySalesRecord,
   });
