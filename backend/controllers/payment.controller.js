@@ -4,6 +4,7 @@ import AppError from '../utils/error.utils.js';
 import Payment from '../models/payment.model.js';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
+import sendEmail from '../utils/sendEmail.js';
 
 dotenv.config();
 
@@ -50,7 +51,7 @@ export const buySubscription = async (req, res, next) => {
       success_url: `${YOUR_DOMAIN}/checkout/success?success=true&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${YOUR_DOMAIN}/checkout/fail?canceled=true`,
     });
-    
+
     // Retrieve the subscription ID from the session object and store it
     user.subscription.id = session.id;
     user.subscription.status = 'pending';
@@ -61,7 +62,7 @@ export const buySubscription = async (req, res, next) => {
       success: true,
       message: 'Subscription created successfully',
       url: session.url,
-      subscription_id : session.id
+      subscription_id: session.id
     });
   } catch (error) {
     console.error(error); // Log the error for debugging
@@ -75,6 +76,15 @@ export const buySubscription = async (req, res, next) => {
  * @ROUTE @POST {{URL}}/api/v1/payments/verify
  * @ACCESS Private (Logged in user only)
  */
+import axios from 'axios'; // Axios will be used to download the invoice PDF
+import fs from 'fs'; // Used to handle file system operations
+import path from 'path'; // To manage file paths
+import { fileURLToPath } from 'url'; // ES Module workaround
+
+// Create __dirname equivalent for ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 export const verifySubscription = async (req, res, next) => {
   const { id } = req.user;
   const { session_id } = req.body;
@@ -94,8 +104,18 @@ export const verifySubscription = async (req, res, next) => {
       let paymentIntentId = session.payment_intent;
       let invoice;
       if (!paymentIntentId) {
-        invoice = await stripe.invoices.retrieve(session.invoice);
-        paymentIntentId = invoice.payment_intent; // Get the payment intent from the invoice
+        if (session.invoice) {
+          // Attempt to retrieve the invoice if session.invoice is available
+          try {
+            invoice = await stripe.invoices.retrieve(session.invoice);
+            paymentIntentId = invoice.payment_intent; // Get the payment intent from the invoice
+          } catch (invoiceError) {
+            console.error('Error retrieving invoice:', invoiceError);
+            return next(new AppError('Failed to retrieve invoice. Please contact support.', 500));
+          }
+        } else {
+          return next(new AppError('Invoice not found in session', 400));
+        }
       }
 
       if (!paymentIntentId) {
@@ -119,17 +139,65 @@ export const verifySubscription = async (req, res, next) => {
       user.subscription.status = 'active';
       await user.save();
 
-      // Retrieve the invoice URL to send to the user
+      // Retrieve the invoice PDF URL to send to the user
       if (!invoice) {
         invoice = await stripe.invoices.retrieve(session.invoice);
       }
       const invoiceUrl = invoice.hosted_invoice_url;
+      const invoicePdfUrl = invoice.invoice_pdf; // Get the direct PDF link of the invoice
 
-      return res.status(200).json({
-        success: true,
-        message: 'Payment verified successfully',
-        payment: paymentRecord, // Return the created payment record if needed
-        invoiceUrl, // Attach the invoice URL for user's reference
+
+      // Ensure the invoices directory exists, create if it doesn't
+      const invoicesDir = path.join(__dirname, '../invoices');
+      if (!fs.existsSync(invoicesDir)) {
+        fs.mkdirSync(invoicesDir, { recursive: true }); // Create the directory
+      }
+
+      // Define the path where the invoice PDF will be saved
+      const pdfPath = path.join(invoicesDir, `${user._id}-invoice.pdf`);
+      const pdfWriter = fs.createWriteStream(pdfPath);
+
+      // Download the invoice PDF using axios
+      const response = await axios({
+        url: invoicePdfUrl,
+        method: 'GET',
+        responseType: 'stream', // Get the response as a stream (for file download)
+      });
+
+      // Pipe the PDF data to the file
+      response.data.pipe(pdfWriter);
+
+      pdfWriter.on('finish', async () => {
+        // Send the invoice via email with the PDF as an attachment
+        const subject = 'Your Subscription Invoice';
+        const message = `
+          <h1>Payment Successful</h1>
+          <p>Thank you for your subscription. Please find your invoice attached.</p>
+        `;
+
+        // Send the email with the PDF as an attachment
+        await sendEmail(user.email, subject, message, [
+          {
+            filename: `${user._id}-invoice.pdf`,
+            path: pdfPath,
+            contentType: 'application/pdf' // Specify that it's a PDF file
+          },
+        ]);
+
+        // Once email is sent, remove the PDF file from the server
+        fs.unlinkSync(pdfPath);
+
+        return res.status(200).json({
+          success: true,
+          message: 'Payment verified successfully and invoice sent via email',
+          payment: paymentRecord,
+          invoiceUrl
+        });
+      });
+
+      pdfWriter.on('error', (err) => {
+        console.error('Error downloading invoice PDF:', err);
+        return next(new AppError('Failed to download the invoice PDF', 500));
       });
     } else {
       return next(new AppError('Session is not for a subscription', 400));
@@ -139,6 +207,8 @@ export const verifySubscription = async (req, res, next) => {
     return next(new AppError(error.message, 500));
   }
 };
+
+
 
 // export const verifySubscription = async (req, res, next) => {
 //   const { id } = req.user;
@@ -270,6 +340,15 @@ export const cancelSubscription = async (req, res, next) => {
 
   await user.save();
   await payment.deleteOne();
+
+  // Send the invoice via email
+  const subject = 'Your Subscription Canceled';
+  const message = `
+     <h1>Canceled the Course Bundle subscription</h1>
+     <p>Course Bundle subscription is canceled successfully. Amount will be refunded in 2 to 3 working days.</p>
+   `;
+
+  await sendEmail(user.email, subject, message);
 
   // Send the response
   res.status(200).json({
