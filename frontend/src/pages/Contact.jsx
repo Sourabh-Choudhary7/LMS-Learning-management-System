@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import Layout from "../layout/Layout";
 import { useDispatch, useSelector } from "react-redux";
 import { getInTouch } from "../redux/Slices/statsSlice";
+import { jsPDF } from 'jspdf';
+import 'jspdf-autotable'; // For handling tables in jsPDF
 
 const Contact = () => {
   const dispatch = useDispatch();
@@ -35,19 +37,63 @@ const Contact = () => {
 
   const onFormSubmit = async (e) => {
     e.preventDefault();
-
+  
     if (!data.name || !data.email || !data.message) {
       toast("Please enter all fields");
-      return
+      return;
     }
-
-    const res = await dispatch(getInTouch(data));
-    if (res?.payload?.success)
-      setData({
-        ...data,
-        message: ""
-      });
-  }
+  
+    // Generate the PDF and convert it to base64
+    const pdfBlob = await generatePDF();
+    const reader = new FileReader();
+    reader.readAsDataURL(pdfBlob);
+    reader.onloadend = async () => {
+      const base64data = reader.result;
+  
+      // Create the payload object
+      const payload = {
+        name: data.name,
+        email: data.email,
+        message: data.message,
+        pdf: base64data, // Send the PDF as base64 string
+      };
+  
+      // Dispatch action to send data to the server
+      const res = await dispatch(getInTouch(payload));
+      if (res?.payload?.success) {
+        setData({
+          ...data,
+          message: ""
+        });
+      }
+    };
+  };
+  
+  
+  
+  const generatePDF = async () => {
+    const doc = new jsPDF();
+  
+    // Title
+    doc.setFontSize(20);
+    doc.text('Review By User', 14, 20);
+  
+    // Set up the table
+    const tableColumn = ['SL No.', 'Full Name', 'Email', 'Message'];
+    const tableRows = [[1, data.name || 'N/A', data.email || 'N/A', data.message || 'N/A']];
+  
+    // Add the table to the PDF
+    doc.autoTable({
+      head: [tableColumn],
+      body: tableRows,
+      startY: 30,
+      theme: 'grid',
+    });
+  
+    // Return the PDF as a Blob
+    return doc.output('blob');
+  };
+  
 
   return (
     <Layout>
