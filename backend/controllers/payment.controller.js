@@ -5,6 +5,10 @@ import Payment from '../models/payment.model.js';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import sendEmail from '../utils/sendEmail.js';
+import axios from 'axios';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 dotenv.config();
 
@@ -76,12 +80,7 @@ export const buySubscription = async (req, res, next) => {
  * @ROUTE @POST {{URL}}/api/v1/payments/verify
  * @ACCESS Private (Logged in user only)
  */
-import axios from 'axios'; // Axios will be used to download the invoice PDF
-import fs from 'fs'; // Used to handle file system operations
-import path from 'path'; // To manage file paths
-import { fileURLToPath } from 'url'; // ES Module workaround
-
-// Create __dirname equivalent for ES modules
+// // Create __dirname equivalent for ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -207,8 +206,6 @@ export const verifySubscription = async (req, res, next) => {
     return next(new AppError(error.message, 500));
   }
 };
-
-
 
 // export const verifySubscription = async (req, res, next) => {
 //   const { id } = req.user;
