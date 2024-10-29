@@ -5,7 +5,7 @@ import { deactivateUserAccount, deleteUserAccount, getUserData, logout, toggleTw
 import { MdOutlineDarkMode, MdOutlineLightMode, MdLock, MdSecurity, MdHelp, MdExpandMore, MdExpandLess, MdManageAccounts } from 'react-icons/md';
 import { FaSignInAlt } from 'react-icons/fa';
 import { setMode } from '../../redux/Slices/modeSlice';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { VscColorMode } from 'react-icons/vsc';
 import { TiUserDelete } from 'react-icons/ti';
 
@@ -20,6 +20,7 @@ const Settings = () => {
 
   // Accordion state
   const [openSection, setOpenSection] = useState(null);
+  const navigate = useNavigate(); 
 
   // Toggle dark/light mode
   const handleMode = () => {
